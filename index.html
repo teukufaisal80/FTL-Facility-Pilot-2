@@ -72,6 +72,8 @@
 
   const SHEET_ID = "1HqgoFdEwppoBfcPj2HeXPJuo-WH-Ef4sik1J0OYoORg";
   const GEMINI_KEY = "AIzaSyCEjU3SuMpxHbGiK6i4eusLUivoIURzDto";
+  // Generative Language API endpoint (Google Cloud Console)
+  // v1beta supports gemini-2.0-flash
   const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxoJYrWA2tr1oVe-G-UVlnKZ36xMroIFKXW2-KrG_Y1WEl9rofq2NdCVtHtfwo2XtE/exec";
   const SESSION_DURATION = 15 * 60 * 1000;
@@ -406,19 +408,39 @@
     },[]);
 
     function buildContext(){
-      const sorted=[...monthRanges].sort((a,b)=>b.year-a.year||b.month-a.month).slice(0,3);
-      const labels=sorted.map(m=>m.labelFull+" "+m.year).join(", ");
-      const from=sorted.length?new Date(sorted[sorted.length-1].from):null;
-      const recent=from?divData.filter(d=>d.dateParsed&&d.dateParsed>=from):divData;
-      const ic={},bc={},sc={};
-      recent.forEach(d=>{ic[d.sub]=(ic[d.sub]||0)+1;bc[d.branch]=(bc[d.branch]||0)+1;sc[d.status]=(sc[d.status]||0)+1;});
-      const ti=Object.entries(ic).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>`${k}(${v})`).join(", ");
-      const tb=Object.entries(bc).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>`${k}(${v})`).join(", ");
+      // Pakai SEMUA data dari sheet untuk divisi ini - bukan dibatasi filter tanggal UI
+      const sorted=[...monthRanges].sort((a,b)=>a.year-b.year||a.month-b.month);
+      const labels=sorted.length
+        ? (sorted[0].labelFull+" "+sorted[0].year) + (sorted.length>1?" s/d "+sorted[sorted.length-1].labelFull+" "+sorted[sorted.length-1].year:"")
+        : "semua periode";
+      const recent=divData; // semua data sheet, tidak dibatasi filter UI
+      const ic={},bc={},sc={},catCt={};
+      recent.forEach(d=>{
+        ic[d.sub]=(ic[d.sub]||0)+1;
+        bc[d.branch]=(bc[d.branch]||0)+1;
+        sc[d.status]=(sc[d.status]||0)+1;
+        catCt[d.cat]=(catCt[d.cat]||0)+1;
+      });
+      const ti=Object.entries(ic).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>`${k}(${v})`).join(", ");
+      const tb=Object.entries(bc).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>`${k}(${v})`).join(", ");
       const ts=Object.entries(sc).map(([k,v])=>`${k}:${v}`).join(", ");
-      return{ctx:`Divisi: ${division.label}\nPeriode: ${labels}\nTotal keluhan: ${recent.length}\nTop isu: ${ti}\nTop cabang: ${tb}\nStatus: ${ts}`,labels};
+      const tc=Object.entries(catCt).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}(${v})`).join(", ");
+      return{ctx:`Divisi: ${division.label}
+Periode data: ${labels}
+Total keluhan: ${recent.length}
+Kategori: ${tc}
+Top sub-issue: ${ti}
+Top cabang: ${tb}
+Status: ${ts}`,labels};
     }
 
-    const SUFFIX=`\n\nKonteks: Konsultan operasional jaringan gym FTL. Gunakan terminologi: member, cabang/outlet, FC, PT, GX, MC, OB, staff, loker, alat gym, treadmill, dumbbell, kebersihan, fasilitas, parkir, membership, kelas, Google Review, Quick Response, Wh\u0041tsApp.\n\nBALAS HANYA JSON valid, tidak ada teks lain:\n{"summary":"ringkasan 1-2 kalimat spesifik","items":[{"action":"langkah konkret maks 70 karakter","detail":"penjelasan maks 120 karakter","days":3}]}\nBuat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
+    const SUFFIX=`
+
+Konteks: Konsultan operasional jaringan gym FTL Indonesia. Terminologi: member, cabang/outlet, FC, PT, GX, MC, OB, staff, loker, alat gym, treadmill, kebersihan, fasilitas, parkir, membership, kelas, Google Review, Quick Response, WhatsApp.
+
+BALAS HANYA JSON valid, tidak ada teks lain:
+{"summary":"ringkasan 1-2 kalimat spesifik","items":[{"action":"langkah konkret maks 70 karakter","detail":"penjelasan maks 120 karakter","days":7}]}
+Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
 
     async function analyze(type,customText){
       console.log("[FTL AI] analyze() called, type:", type);
@@ -429,10 +451,10 @@
         console.log("[FTL AI] context built, ctx length:", ctx.length);
         const titles={freq:"Isu Paling Sering Muncul",impact:"Isu Paling Berdampak",outlet:"Outlet Terbanyak Komplain",focus:"Rekomendasi Fokus Bulan Ini",custom:customText||"Analisa Custom"};
         const prompts={
-          freq:`Data keluhan FTL Gym:\n${ctx}\n\nAnalisa sub-issue paling sering muncul, berikan action items konkret.${SUFFIX}`,
-          impact:`Data keluhan FTL Gym:\n${ctx}\n\nAnalisa sub-issue paling berdampak pada kepuasan member dan bisnis.${SUFFIX}`,
-          outlet:`Data keluhan FTL Gym:\n${ctx}\n\nAnalisa outlet/cabang dengan keluhan terbanyak, action untuk manajemen.${SUFFIX}`,
-          focus:`Data keluhan FTL Gym:\n${ctx}\n\nRekomendasi fokus bulan ini dari 3 aspek: (1) sub-issue paling sering & berdampak, (2) outlet butuh intervensi, (3) pola status keluhan. Gabungkan jadi action terintegrasi, urutkan paling mendesak.${SUFFIX}`,
+          freq:`Data keluhan FTL Gym (seluruh data sheet):\n${ctx}\n\nAnalisa sub-issue paling sering muncul dari seluruh periode data, berikan action items konkret.${SUFFIX}`,
+          impact:`Data keluhan FTL Gym (seluruh data sheet):\n${ctx}\n\nAnalisa sub-issue paling berdampak pada kepuasan member dan bisnis dari seluruh periode data.${SUFFIX}`,
+          outlet:`Data keluhan FTL Gym (seluruh data sheet):\n${ctx}\n\nAnalisa outlet/cabang dengan keluhan terbanyak dari seluruh periode data, action untuk manajemen.${SUFFIX}`,
+          focus:`Data keluhan FTL Gym (seluruh data sheet):\n${ctx}\n\nBerikan rekomendasi fokus dari 3 aspek: (1) sub-issue paling sering & berdampak, (2) outlet yang butuh intervensi segera, (3) pola status keluhan. Gabungkan jadi action terintegrasi, urutkan paling mendesak.${SUFFIX}`,
           custom:`Data keluhan FTL Gym:\n${ctx}\n\nPertanyaan: ${customText}\n\nJawab dengan action items konkret.${SUFFIX}`
         };
         console.log("[FTL AI] Sending request to Gemini...");
@@ -444,12 +466,14 @@
         if(!res.ok || data.error){
           const errMsg = data.error?.message || data.error?.status || `HTTP ${res.status}`;
           const errCode = data.error?.code || res.status;
-          console.error("[FTL AI] API Error:", errCode, errMsg);
-          // Error codes from Google Cloud Console API keys
-          if(errCode===400||errMsg.includes("API_KEY_INVALID")) throw new Error("API Key tidak valid. Pastikan Generative Language API sudah di-enable di Google Cloud Console.");
-          if(errCode===403||errMsg.includes("forbidden")||errMsg.includes("API key not valid")) throw new Error("API Key tidak punya akses. Cek: (1) Enable 'Generative Language API' di Cloud Console, (2) Pastikan tidak ada referrer restriction.");
-          if(errCode===429||errMsg.includes("quota")||errMsg.includes("RESOURCE_EXHAUSTED")) throw new Error("Quota API habis. Cek quota di Google Cloud Console.");
-          throw new Error(`Gemini API error (${errCode}): ${errMsg}`);
+          console.error("[FTL AI] Full error:", JSON.stringify(data));
+          console.error("[FTL AI] Code:", errCode, "| Msg:", errMsg);
+          if(errCode===400) throw new Error(`Bad request (400): ${errMsg}`);
+          if(errCode===401||errMsg.toLowerCase().includes("api_key_invalid")||errMsg.toLowerCase().includes("api key not valid")) throw new Error(`API Key tidak valid (401). Pastikan key aktif di Google Cloud Console.`);
+          if(errCode===403||errMsg.toLowerCase().includes("forbidden")||errMsg.toLowerCase().includes("permission")) throw new Error(`Akses ditolak (403). Pastikan Generative Language API sudah di-enable dan API key tidak ada restriction.`);
+          if(errCode===429||errMsg.toLowerCase().includes("resource_exhausted")) throw new Error(`Rate limit (429): ${errMsg}. Lihat Cloud Console > APIs & Services > Quotas.`);
+          if(errCode===503) throw new Error(`Gemini sementara tidak tersedia (503). Coba lagi.`);
+          throw new Error(`Gemini error ${errCode}: ${errMsg}`);
         }
         const text=data.candidates?.[0]?.content?.parts?.[0]?.text||"";
         console.log("[FTL AI] Got text response, length:", text.length);
@@ -460,10 +484,10 @@
         setModal({title:titles[type],summary:parsed.summary,items:parsed.items||[]});
       }catch(e){
         let msg = e.message || "Unknown error";
-        // Tampilkan lebih detail untuk debugging
-        if(msg.includes("API_KEY") || msg.includes("key")) msg = "API Key tidak valid atau belum diaktifkan. Cek Google AI Studio.";
-        else if(msg.includes("quota") || msg.includes("QUOTA")) msg = "Quota API habis. Cek Google AI Studio.";
-        else if(msg.includes("fetch") || msg.includes("network") || msg.includes("Failed")) msg = "Gagal konek ke Gemini API. Cek koneksi internet.";
+        if(msg.includes("API_KEY_INVALID") || msg.includes("API key not valid") || msg.includes("INVALID_ARGUMENT")) msg = "API Key tidak valid. Pastikan Generative Language API sudah di-enable di Google Cloud Console (console.cloud.google.com).";
+        else if(msg.includes("RESOURCE_EXHAUSTED") || msg.includes("quota") || msg.includes("429")) msg = "Quota harian Gemini API habis. Cek di Google Cloud Console > APIs & Services > Quotas, atau tunggu reset besok.";
+        else if(msg.includes("403") || msg.includes("forbidden") || msg.includes("permission")) msg = "API Key tidak punya izin. Pastikan 'Generative Language API' sudah di-enable dan API key tidak ada restriction di Google Cloud Console.";
+        else if(msg.includes("fetch") || msg.includes("Failed to fetch") || msg.includes("NetworkError")) msg = "Gagal konek ke Gemini API. Cek koneksi internet.";
         setError(msg);
         console.error("[FTL AI Error]", e);
       }
@@ -535,19 +559,22 @@
           )}
         </div>
 
-        {customModal&&(
-          <div style={{position:"fixed",inset:0,zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"rgba(0,0,0,0.25)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}} onClick={e=>e.target===e.currentTarget&&setCM(false)}>
-            <div style={{width:"100%",maxWidth:520,borderRadius:24,background:"rgba(255,255,255,0.88)",backdropFilter:"blur(62px) saturate(200%)",WebkitBackdropFilter:"blur(62px) saturate(200%)",borderTop:"1px solid rgba(255,255,255,0.92)",borderRight:"1px solid rgba(255,255,255,0.55)",borderBottom:"1px solid rgba(255,255,255,0.40)",borderLeft:"1px solid rgba(255,255,255,0.55)",boxShadow:"inset 0 0.5px 0 rgba(255,255,255,0.98),0 32px 80px rgba(0,0,0,0.20)",padding:"28px 28px 24px",animation:"fu 0.20s ease both"}}>
+        {customModal&&ReactDOM.createPortal(
+          <div style={{position:"fixed",inset:0,zIndex:2147483646,display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"rgba(0,0,0,0.30)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}} onMouseDown={e=>e.target===e.currentTarget&&setCM(false)}>
+            <div onMouseDown={e=>e.stopPropagation()} style={{width:"100%",maxWidth:520,borderRadius:24,background:"rgba(255,255,255,0.96)",backdropFilter:"blur(62px) saturate(200%)",WebkitBackdropFilter:"blur(62px) saturate(200%)",border:"1px solid rgba(0,0,0,0.10)",boxShadow:"0 8px 16px rgba(0,0,0,0.08),0 32px 80px rgba(0,0,0,0.20)",padding:"28px 28px 24px",animation:"fu 0.20s ease both"}}>
               <div style={{fontSize:17,fontWeight:800,color:"rgba(0,0,0,0.84)",marginBottom:6,letterSpacing:"-0.01em"}}>Tulis Pertanyaan Analisa</div>
-              <div style={{fontSize:12,color:"rgba(0,0,0,0.40)",marginBottom:18,fontWeight:500}}>AI akan menganalisa berdasarkan data {division.label} 3 bulan terakhir</div>
-              <textarea value={custom} onChange={e=>setCustom(e.target.value)} placeholder="Contoh: Cabang mana yang paling perlu perhatian khusus bulan ini?" rows={4}
-                style={{width:"100%",padding:"12px 16px",borderRadius:14,border:"1px solid rgba(0,0,0,0.12)",fontSize:13,fontWeight:500,color:"rgba(0,0,0,0.78)",background:"rgba(255,255,255,0.90)",outline:"none",resize:"none",fontFamily:"inherit",lineHeight:1.6,boxShadow:"inset 0 1px 4px rgba(0,0,0,0.06)"}} autoFocus/>
+              <div style={{fontSize:12,color:"rgba(0,0,0,0.40)",marginBottom:18,fontWeight:500}}>Mau analisa apa?</div>
+              <textarea value={custom} onChange={e=>setCustom(e.target.value)}
+                placeholder="Contoh: Cabang mana yang paling bermasalah? Apa tren keluhan 2 bulan terakhir? Isu apa yang paling urgent?"
+                rows={4}
+                style={{width:"100%",padding:"12px 16px",borderRadius:14,border:"1px solid rgba(0,0,0,0.12)",fontSize:13,fontWeight:500,color:"rgba(0,0,0,0.78)",background:"rgba(255,255,255,0.95)",outline:"none",resize:"vertical",fontFamily:"inherit",lineHeight:1.6,boxShadow:"inset 0 1px 4px rgba(0,0,0,0.06)"}} autoFocus/>
               <div style={{display:"flex",gap:8,marginTop:14,justifyContent:"flex-end"}}>
-                <button onClick={()=>setCM(false)} className="pill-btn" style={{fontWeight:600,fontSize:13}}>Batal</button>
-                <button onClick={()=>custom.trim()&&analyze("custom",custom)} disabled={!custom.trim()} className="pill-btn active-black" style={{fontWeight:700,fontSize:13,padding:"8px 24px",opacity:!custom.trim()?.45:1}}>Analisa</button>
+                <button onMouseDown={e=>{e.stopPropagation();setCM(false);}} className="pill-btn" style={{fontWeight:600,fontSize:13}}>Batal</button>
+                <button onMouseDown={e=>{e.stopPropagation();if(custom.trim())analyze("custom",custom);}} disabled={!custom.trim()} className="pill-btn active-black" style={{fontWeight:700,fontSize:13,padding:"8px 24px",opacity:!custom.trim()?.45:1}}>Analisa</button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {modal&&(
@@ -561,7 +588,9 @@
                   </div>
                   <div style={{fontSize:20,fontWeight:800,color:"rgba(0,0,0,0.86)",letterSpacing:"-0.01em"}}>{modal.title}</div>
                 </div>
-                <button onClick={()=>setModal(null)} style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.08)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.60)",cursor:"pointer",fontSize:13,color:"rgba(0,0,0,0.50)",fontWeight:700,flexShrink:0,marginLeft:16,boxShadow:"inset 0 0.5px 0 rgba(255,255,255,0.80)"}}>X</button>
+                <button onClick={()=>setModal(null)} style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.08)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.60)",cursor:"pointer",color:"rgba(0,0,0,0.50)",fontWeight:700,flexShrink:0,marginLeft:16,boxShadow:"inset 0 0.5px 0 rgba(255,255,255,0.80)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
               </div>
               {modal.summary&&<div style={{padding:"14px 24px",background:"rgba(0,122,255,0.06)",borderBottom:"1px solid rgba(255,255,255,0.40)"}}><p style={{fontSize:13,color:"rgba(0,0,0,0.65)",lineHeight:1.65,fontWeight:500}}>{modal.summary}</p></div>}
               <div style={{padding:"16px 24px 8px"}}>
@@ -600,7 +629,9 @@
           <div style={{position:"fixed",bottom:28,right:28,zIndex:2147483647,padding:"14px 20px",borderRadius:14,background:"rgba(185,50,42,0.95)",backdropFilter:"blur(20px)",color:"#fff",fontSize:13,fontWeight:600,boxShadow:"0 8px 32px rgba(185,50,42,0.40)",animation:"fu 0.2s ease both",display:"flex",alignItems:"center",gap:10,maxWidth:380}}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <span style={{flex:1}}>{error}</span>
-            <button onClick={()=>setError(null)} style={{background:"rgba(255,255,255,0.20)",border:"none",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:700,borderRadius:6,padding:"2px 8px",flexShrink:0}}>Tutup</button>
+            <button onClick={()=>setError(null)} style={{background:"rgba(255,255,255,0.20)",border:"none",color:"#fff",cursor:"pointer",borderRadius:6,padding:"5px 7px",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
           </div>
         )}
       </>
@@ -936,7 +967,9 @@
                 </div>
                 <div style={{display:"flex",gap:8,alignItems:"center"}}>
                   <button onClick={()=>expDrill(drillSub)} className="pill-btn" style={{color:"#2D8C5A",fontSize:11,fontWeight:700,gap:5}}>{SVG_DL} Export Excel</button>
-                  <button onClick={()=>setDrill(null)} style={{width:28,height:28,borderRadius:"50%",background:"rgba(0,0,0,0.08)",border:"1px solid rgba(0,0,0,0.08)",cursor:"pointer",fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.55)"}}>X</button>
+                  <button onClick={()=>setDrill(null)} style={{width:28,height:28,borderRadius:"50%",background:"rgba(0,0,0,0.08)",border:"1px solid rgba(0,0,0,0.08)",cursor:"pointer",color:"rgba(0,0,0,0.55)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
                 </div>
               </div>
               <div style={{overflowX:"auto",maxHeight:380,overflowY:"auto"}}>
@@ -1070,7 +1103,9 @@
                     {[10,20,50,99999].map(v=><option key={v} value={v}>Show {v===99999?"All":v}</option>)}
                   </select>
                   <button onClick={()=>{const rows=bInfo.issues.map((d,idx)=>({"#":idx+1,Branch:d.branch,"Sub-Issue":d.sub,Date:d.dateStr,Status:d.status,Rating:d.rating||"",Source:d.source,Summary:d.intiPermasalahan}));exportXLSX(rows,`FTL_${bInfo.branch}_${new Date().toISOString().split('T')[0]}.xlsx`,bInfo.branch.slice(0,31));}} className="pill-btn" style={{fontSize:10,color:"#2D8C5A",fontWeight:700,gap:4}}>{SVG_DL} Excel</button>
-                  <button onClick={()=>{const sy=window.scrollY;setExpBr(null);setTimeout(()=>window.scrollTo({top:sy}),10);}} style={{width:26,height:26,borderRadius:"50%",background:"rgba(0,0,0,0.07)",border:"none",cursor:"pointer",fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.50)"}}>X</button>
+                  <button onClick={()=>{const sy=window.scrollY;setExpBr(null);setTimeout(()=>window.scrollTo({top:sy}),10);}} style={{width:26,height:26,borderRadius:"50%",background:"rgba(0,0,0,0.07)",border:"none",cursor:"pointer",color:"rgba(0,0,0,0.50)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                 </div>
               </div>
               <div style={{padding:"14px 20px"}}>
