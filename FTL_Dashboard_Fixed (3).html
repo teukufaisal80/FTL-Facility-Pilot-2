@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+  <title>FTL GYM — Complaint Intelligence v1775170902</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      databaseURL: "https://ftl-complaint-database-default-rtdb.asia-southeast1.firebasedatabase.app"
+    });
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    @font-face{font-family:'SF Pro Display';src:local('-apple-system'),local('SF Pro Display');font-weight:400;}
+    @font-face{font-family:'SF Pro Display';src:local('SF Pro Display');font-weight:500 600;}
+    @font-face{font-family:'SF Pro Display';src:local('SF Pro Display');font-weight:700;}
+    @font-face{font-family:'SF Pro Display';src:local('SF Pro Display');font-weight:800 900;}
+    body{font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Helvetica Neue','Inter',sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;letter-spacing:-0.01em;min-height:100vh;background-color:#FAF9F6;background-image:radial-gradient(ellipse 72% 55% at 15% -5%,rgba(0,122,255,0.10) 0%,transparent 60%),radial-gradient(ellipse 60% 45% at 88% 12%,rgba(52,199,89,0.07) 0%,transparent 55%),radial-gradient(ellipse 55% 40% at 75% 88%,rgba(175,82,222,0.06) 0%,transparent 50%),radial-gradient(ellipse 45% 35% at 10% 80%,rgba(255,204,0,0.05) 0%,transparent 50%);}
+    .glass{background:rgba(255,255,255,0.72);backdrop-filter:blur(62px) saturate(180%) brightness(1.04);-webkit-backdrop-filter:blur(62px) saturate(180%) brightness(1.04);border-top:1px solid rgba(255,255,255,0.90);border-right:1px solid rgba(255,255,255,0.55);border-bottom:1px solid rgba(255,255,255,0.40);border-left:1px solid rgba(255,255,255,0.55);border-radius:22px;background-image:linear-gradient(180deg,rgba(255,255,255,0.55) 0%,rgba(255,255,255,0.00) 100%);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.95),0 1px 1px rgba(0,0,0,0.03),0 4px 12px rgba(0,0,0,0.05),0 16px 40px rgba(0,0,0,0.07),0 32px 60px rgba(0,0,0,0.03);transition:transform 0.20s ease,box-shadow 0.20s ease;}
+    .glass:hover{transform:translateY(-1px);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.95),0 6px 16px rgba(0,0,0,0.07),0 22px 52px rgba(0,0,0,0.09);}
+    .glass-inner{background:rgba(255,255,255,0.82);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border-top:1px solid rgba(255,255,255,0.92);border-right:1px solid rgba(255,255,255,0.50);border-bottom:1px solid rgba(255,255,255,0.35);border-left:1px solid rgba(255,255,255,0.50);border-radius:16px;background-image:linear-gradient(180deg,rgba(255,255,255,0.45) 0%,rgba(255,255,255,0.00) 100%);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.95),0 2px 6px rgba(0,0,0,0.04),0 8px 24px rgba(0,0,0,0.06);}
+    .pill-btn{background:rgba(255,255,255,0.75);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border-top:1px solid rgba(255,255,255,0.90);border-right:1px solid rgba(255,255,255,0.50);border-bottom:1px solid rgba(255,255,255,0.35);border-left:1px solid rgba(255,255,255,0.50);border-radius:9999px;background-image:linear-gradient(180deg,rgba(255,255,255,0.50) 0%,rgba(255,255,255,0.00) 100%);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.95),0 2px 6px rgba(0,0,0,0.05),0 4px 12px rgba(0,0,0,0.06);cursor:pointer;transition:all 0.14s ease;font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Helvetica Neue','Inter',sans-serif;font-weight:600;font-size:12px;color:rgba(0,0,0,0.72);display:inline-flex;align-items:center;padding:6px 16px;}
+    .pill-btn:hover{background:rgba(255,255,255,0.92);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.98),0 4px 12px rgba(0,0,0,0.08);transform:translateY(-0.5px);}
+    .pill-btn:active{transform:scale(0.97);}
+    .pill-btn.active-black{background:rgba(28,28,30,0.88);color:#fff;border-color:rgba(28,28,30,0.5);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.12),0 3px 10px rgba(0,0,0,0.25);}
+    .pill-btn.active-green{background:rgba(45,140,90,0.88);color:#fff;border-color:rgba(45,140,90,0.5);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.25),0 3px 10px rgba(45,140,90,0.25);}
+    .pill-btn.active-orange{background:rgba(175,100,40,0.88);color:#fff;border-color:rgba(175,100,40,0.5);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.25),0 3px 10px rgba(175,100,40,0.25);}
+    .pill-btn.active-red{background:rgba(185,50,42,0.88);color:#fff;border-color:rgba(185,50,42,0.5);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.25),0 3px 10px rgba(185,50,42,0.25);}
+    .tab-btn{background:transparent;border:none;border-radius:12px;padding:7px 16px;font-size:13px;font-weight:500;color:rgba(0,0,0,0.45);cursor:pointer;transition:all 0.14s ease;font-family:'SF Pro Display',-apple-system,sans-serif;}
+    .tab-btn:hover{background:rgba(255,255,255,0.55);color:rgba(0,0,0,0.72);}
+    .tab-btn.active{background:rgba(255,255,255,0.78);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.90);border-right:1px solid rgba(255,255,255,0.45);border-bottom:1px solid rgba(255,255,255,0.30);border-left:1px solid rgba(255,255,255,0.45);background-image:linear-gradient(180deg,rgba(255,255,255,0.45) 0%,transparent 100%);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.95),0 2px 6px rgba(0,0,0,0.06);color:rgba(0,0,0,0.88);font-weight:700;}
+    .pb{height:10px;border-radius:99px;background:rgba(0,0,0,0.07);overflow:hidden;flex:1;}
+    .pf{height:100%;border-radius:99px;transition:width 0.85s cubic-bezier(.4,0,.2,1);}
+    .kpi-card{background:rgba(255,255,255,0.78);backdrop-filter:blur(72px) saturate(180%) brightness(1.04);-webkit-backdrop-filter:blur(72px) saturate(180%) brightness(1.04);border-top:1px solid rgba(255,255,255,0.95);border-right:1px solid rgba(255,255,255,0.55);border-bottom:1px solid rgba(255,255,255,0.40);border-left:1px solid rgba(255,255,255,0.55);border-radius:20px;background-image:linear-gradient(180deg,rgba(255,255,255,0.55) 0%,rgba(255,255,255,0.00) 55%);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.98),0 4px 12px rgba(0,0,0,0.06),0 16px 40px rgba(0,0,0,0.08);transition:transform 0.2s ease,box-shadow 0.2s ease;padding:22px 24px;}
+    .kpi-card:hover{transform:translateY(-2px) scale(1.012);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.98),0 18px 48px rgba(0,0,0,0.10),0 4px 14px rgba(0,0,0,0.06);}
+    .quad{border-radius:18px;padding:16px 18px;backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);border-top:1px solid rgba(255,255,255,0.80);border-right:1px solid rgba(255,255,255,0.40);border-bottom:1px solid rgba(255,255,255,0.25);border-left:1px solid rgba(255,255,255,0.40);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.90),0 4px 16px rgba(0,0,0,0.05);}
+    .status-sel{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;border-radius:9999px;padding:4px 10px;border:1px solid;outline:none;cursor:pointer;font-family:'SF Pro Display',-apple-system,sans-serif;box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.70),0 1px 4px rgba(0,0,0,0.06);transition:all 0.14s;min-width:128px;appearance:none;-webkit-appearance:none;}
+    input[type="date"]{background:rgba(255,255,255,0.78);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.90);border-right:1px solid rgba(255,255,255,0.45);border-bottom:1px solid rgba(255,255,255,0.30);border-left:1px solid rgba(255,255,255,0.45);border-radius:9999px;padding:5px 14px;font-size:12px;font-weight:600;color:rgba(0,0,0,0.78);outline:none;cursor:pointer;box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.90),0 1px 4px rgba(0,0,0,0.05);background-image:linear-gradient(180deg,rgba(255,255,255,0.40) 0%,transparent 100%);font-family:'SF Pro Display',-apple-system,sans-serif;}
+    input[type="date"]:focus{box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.90),0 0 0 3px rgba(0,122,255,0.15);}
+    input[type="password"],input[type="text"]{font-family:'SF Pro Display',-apple-system,sans-serif;}
+    ::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.14);border-radius:99px;}
+    tr.trow:hover td{background:rgba(255,255,255,0.35);}
+    select{font-family:'SF Pro Display',-apple-system,sans-serif;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .spin{animation:spin 0.75s linear infinite;}
+    @keyframes fu{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+    .fu{animation:fu 0.35s ease both;}
+    .login-bg{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .login-card{width:100%;max-width:420px;}
+    .division-btn{width:100%;padding:14px 20px;text-align:left;border-radius:16px;cursor:pointer;background:rgba(255,255,255,0.72);border-top:1px solid rgba(255,255,255,0.90);border-right:1px solid rgba(255,255,255,0.50);border-bottom:1px solid rgba(255,255,255,0.35);border-left:1px solid rgba(255,255,255,0.50);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.95),0 2px 8px rgba(0,0,0,0.05);font-family:'SF Pro Display',-apple-system,sans-serif;transition:all 0.15s;display:flex;align-items:center;justify-content:space-between;}
+    .division-btn:hover{background:rgba(255,255,255,0.92);transform:translateY(-1px);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.98),0 6px 16px rgba(0,0,0,0.08);}
+    .division-btn.selected{background:rgba(28,28,30,0.88);color:#fff;border-color:rgba(28,28,30,0.5);}
+    .box-btn{border-radius:16px !important;padding:10px 20px !important;font-size:13px !important;}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+  const SHEET_ID = "1HqgoFdEwppoBfcPj2HeXPJuo-WH-Ef4sik1J0OYoORg";
+  const GEMINI_KEY = "AIzaSyCEjU3SuMpxHbGiK6i4eusLUivoIURzDto";
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxoJYrWA2tr1oVe-G-UVlnKZ36xMroIFKXW2-KrG_Y1WEl9rofq2NdCVtHtfwo2XtE/exec";
+  const SESSION_DURATION = 15 * 60 * 1000;
+
+  const DIVISIONS = [
+    { key:"FCM",   label:"FCM, FO, Security, OB",  match:/FCM/i,     password:"fcmftl",    color:"#B8332A" },
+    { key:"OM",    label:"OM, FM, MC, PT",          match:/OM/i,      password:"clubftl",   color:"#2E6DB4" },
+    { key:"GX",    label:"GX",                      match:/GX/i,      password:"gxftl",     color:"#2D8C5A" },
+    { key:"PIL",   label:"Pilates",                 match:/Pilates/i, password:"pilatesftl",  color:"#7A52A8" },
+    { key:"ALL",   label:"All Access",              match:null,       password:"allftl", color:"#1C1C1E" },
+  ];
+
+  const MONTHS_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  const MONTH_MAP = {"januari":0,"jan":0,"january":0,"februari":1,"feb":1,"february":1,"maret":2,"mar":2,"march":2,"april":3,"apr":3,"mei":4,"may":4,"juni":5,"jun":5,"june":5,"juli":6,"jul":6,"july":6,"agustus":7,"agu":7,"aug":7,"agust":7,"august":7,"september":8,"sep":8,"sept":8,"oktober":9,"okt":9,"oct":9,"october":9,"november":10,"nov":10,"desember":11,"des":11,"dec":11,"december":11};
+
+  function parseSheetName(name) {
+    const n = name.trim().toLowerCase(); let monthIdx = -1, year = null;
+    const sortedKeys = Object.keys(MONTH_MAP).sort((a,b)=>b.length-a.length);
+    for(const k of sortedKeys){const re=new RegExp('\\b'+k+'\\b','i');if(re.test(n)){monthIdx=MONTH_MAP[k];break;}}
+    const yr = name.match(/\b(20\d{2}|19\d{2})\b/); if(yr) year=parseInt(yr[1]);
+    let divKey=null; for(const d of DIVISIONS){if(d.match&&d.match.test(name)){divKey=d.key;break;}}
+    return{monthIdx,year,divKey,valid:monthIdx>=0&&year!==null};
+  }
+
+  const CLUB_LIST = ["Bendungan Hilir","Blok M","Merdeka","Satrio","SCBD","Mampang","Menteng","Teuku Umar","Gading Sunter","Cipondoh","Cibubur","Pondok Gede","Puri","Gunung Sahari","Green Garden","Rawamangun","Kalimalang","Ahmad Yani","AR Hakim","Depok Lama","Pondok Bambu","Cikarang","Dago","Sukajadi","Tanjung Duren","Bekasi Timur","Gandaria","Kemanggisan","Alam Sutera","Pahlawan","Pajajaran","Sawangan","Pamulam","KBP","Soekarno Hatta","Pasir Koja","Pasar Minggu","Mustika Jaya","Cireundeu","Tebet","Galaxy","Pondok Indah","Gubeng","Stride - Latumenten","Stride - Banceuy","Stride - Cibinong","Stride - Pecenongan","Stride - Gading Timur","Arjuna Utara","Kerobokan","Agora","Ciputra World Surabaya","Tomang","FTL Pilates - Gading Serpong","Green Lake City","Kebon Sirih","Puri Depok Mas","Citra Garden","Pahlawan"];
+
+  function normalizeBranch(name){
+    if(!name)return name; const n=name.toLowerCase().trim();
+    const exact=CLUB_LIST.find(c=>c.toLowerCase()===n); if(exact)return exact;
+    let best=name,bestScore=0;
+    for(const club of CLUB_LIST){const cl=club.toLowerCase();if(cl.includes(n)||n.includes(cl)){const score=Math.min(cl.length,n.length)*2;if(score>bestScore){bestScore=score;best=club;}}else{const wa=n.split(/\s+/),wb=cl.split(/\s+/);const score=wa.filter(w=>w.length>2&&wb.some(w2=>w2.includes(w)||w.includes(w2))).length*3;if(score>bestScore&&score>=3){bestScore=score;best=club;}}}
+    if(bestScore>=4)return best; return name;
+  }
+
+  const GYM_EQUIPMENT_KW=/treadmill|dumbbell|barbell|barbel|bench|cable|smith|rack|squat|leg press|lat pull|rowing|elliptical|spin bike|sepeda|kardio|cardio|beban|plate|dumbell|kettlebell|pull up|dip|mesin gym|alat gym|alat fitness|fitness equipment|gym equipment|alat latihan|alat olahraga/i;
+  const FACILITY_KW=/ac|loker|locker|shower|toilet|wc|kamar mandi|parkir|wifi|internet|lift|escalator|lobby|resepsionis|meja|kursi|cermin|kaca|lampu|listrik|air|kran|wastafel|dispenser|sabun|tissue|handuk|hairdryer|catokan|sauna|steam|kolam|pool/i;
+
+  function classifySub(issue,t){
+    const s=t.toLowerCase(),cat=issue.toLowerCase(),fullText=(cat+" "+s).toLowerCase();
+    if(cat.includes("fasilitas")||cat.includes("alat")||cat.includes("mesin")){
+      if(/bocor|retak|atap|gedung|toilet|wc|bau/.test(s))return"Fasilitas Lainnya";
+      if(GYM_EQUIPMENT_KW.test(fullText)&&!FACILITY_KW.test(fullText)){if(/rusak|stuck|seret|lepas|dol|kendor|macet|mati|error|tidak berfungsi/.test(s))return"Alat Rusak";if(/tua|lama|second|upgrade|ganti|label|bahaya|miring|karatan|usang/.test(s))return"Equipment Issue";return"Alat Rusak";}
+      if(/rusak|stuck|seret|lepas|dol|kendor|macet/.test(s)&&GYM_EQUIPMENT_KW.test(fullText))return"Alat Rusak";
+      if(/tua|lama|second|upgrade|ganti|label|bahaya|miring/.test(s)&&GYM_EQUIPMENT_KW.test(fullText))return"Equipment Issue";
+      return"Fasilitas Lainnya";
+    }
+    if(GYM_EQUIPMENT_KW.test(fullText)&&!FACILITY_KW.test(fullText)){if(/rusak|stuck|seret|lepas|dol|kendor|macet|mati|error|tidak berfungsi|patah|sobek/.test(s))return"Alat Rusak";if(/tua|lama|second|upgrade|ganti|bahaya|miring|karatan|usang/.test(s))return"Equipment Issue";}
+    if(cat.includes("parkir"))return/pung|liar|paksa|bayar|uang|tarif|mahal/.test(s)?"Pungli / Biaya":"Akses Parkir";
+    if(cat.includes("staff")||cat.includes("karyawan")||cat.includes("ob"))return"Staff & Karyawan";
+    if(cat.includes("bersih")||cat.includes("kotor"))return"Fasilitas Lainnya";
+    if(cat.includes("member"))return"Membership";
+    if(cat.includes("kelas")||cat.includes("gx"))return"Kelas & Jadwal";
+    if(/air |shower|mandi|dispenser|karofi|mampet|pipa|onsen|water|bidet/.test(s))return"Water & Plumbing";
+    if(/steam|sauna/.test(s))return"Steam & Sauna";
+    if(/ac |panas|dingin|suhu|pengap/.test(s))return"AC & Suhu";
+    if(/tissue|sabun|handuk|hairdryer|catokan|loker/.test(s))return"Amenities";
+    if(/wifi|internet|paku|keamanan|kunci/.test(s))return"Fasilitas Lainnya";
+    if(/req|request|tolong|pengen|adain/.test(s)||cat.includes("req"))return"Request Lainnya";
+    return"Sub-Issue Lainnya";
+  }
+
+  function getOwner(cat,divKey){
+    if(divKey&&divKey!=="ALL")return null; const s=cat.toLowerCase();
+    if(s.includes("fasilitas")||s.includes("parkir")||s.includes("alat")||s.includes("bersih"))return"FCM, FO, Security, OB";
+    if(s.includes("staff")||s.includes("member")||s.includes("kelas"))return"OM, FM, MC, PT";
+    if(s.includes("gx"))return"GX"; if(s.includes("pilates"))return"Pilates"; return"Operations";
+  }
+
+  const recoDB={"Water & Plumbing":{action:"Audit Suplai & Tekanan Air",detail:"Periksa kinerja pemanas air, tekanan pipa, dan higienitas dispenser air.",tl:"immediate",imp:"HIGH"},"Fasilitas Lainnya":{action:"Tinjauan Perawatan Fasilitas",detail:"Eskalasi perbaikan operasional gedung ke vendor sesuai durasi SLA.",tl:"medium",imp:"LOW"},"Request Lainnya":{action:"Konsolidasi Keluhan Member",detail:"Lacak pengajuan fitur maupun alat baru untuk perencanaan anggaran CapEx.",tl:"long",imp:"LOW"},"Steam & Sauna":{action:"Preventif Komponen Pemanas",detail:"Ganti elemen pemanas yang sudah termakan usia secara proaktif.",tl:"immediate",imp:"MEDIUM"},"AC & Suhu":{action:"Optimalisasi Sistem HVAC",detail:"Bersihkan filter dan kalibrasi sistem pendingin.",tl:"short",imp:"HIGH"},"Pungli / Biaya":{action:"Kebijakan Anti-Pungli",detail:"Pasang peringatan dilarang pungli dan tingkatkan pengawasan parkir.",tl:"immediate",imp:"HIGH"},"Amenities":{action:"Checklist Kelengkapan Rutin",detail:"Staf shift cek ketersediaan tisu, sabun, dan handuk setiap jam.",tl:"immediate",imp:"MEDIUM"},"Akses Parkir":{action:"Manajemen Kapasitas Parkir",detail:"Panduan kantong parkir alternatif saat peak hours.",tl:"short",imp:"MEDIUM"},"Alat Rusak":{action:"Percepatan SLA Perbaikan",detail:"SLA maksimal 24-48 jam untuk kerusakan alat.",tl:"immediate",imp:"HIGH"},"Equipment Issue":{action:"Audit Kelayakan Fleets",detail:"Barikade area berbahaya dan inisiasi penyegaran unit.",tl:"medium",imp:"MEDIUM"},"Staff & Karyawan":{action:"Pelatihan Ulang Hospitality",detail:"Teguran disipliner dan retraining etika ke resepsionis.",tl:"immediate",imp:"HIGH"},"Membership":{action:"Edukasi Kebijakan Tarik",detail:"Flyer pemahaman penagihan dan tata tertib pembebasan masa cuti.",tl:"short",imp:"LOW"},"Kelas & Jadwal":{action:"Evaluasi Jadwal & Kuota",detail:"Pantau penumpukan kelas dan perbesar kuota jam terlaris.",tl:"medium",imp:"LOW"},"Sub-Issue Lainnya":{action:"Investigasi Lapangan Lanjut",detail:"Deteksi kesenjangan operasional lokal yang gagal tercatat.",tl:"short",imp:"LOW"}};
+
+  const tlMap={immediate:{label:"0-1 bln",clr:"#B8332A"},short:{label:"1-3 bln",clr:"#A86428"},medium:{label:"3-6 bln",clr:"#2E6DB4"},long:{label:"6+ bln",clr:"#7A52A8"}};
+  const impStyle={HIGH:{bg:"rgba(185,50,42,0.10)",txt:"#B8332A",bdr:"rgba(185,50,42,0.20)"},MEDIUM:{bg:"rgba(175,100,40,0.10)",txt:"#A86428",bdr:"rgba(175,100,40,0.20)"},LOW:{bg:"rgba(45,140,90,0.10)",txt:"#2D8C5A",bdr:"rgba(45,140,90,0.20)"}};
+  function countMap(arr,key){const m={};arr.forEach(x=>{const k=typeof key==="function"?key(x):x[key];m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+  function parseDate(s){if(!s)return null;const gviz=s.match(/Date\((\d{4}),(\d+),(\d+)\)/);if(gviz)return new Date(+gviz[1],+gviz[2],+gviz[3]);const mn={jan:0,feb:1,mar:2,apr:3,may:4,mei:4,jun:5,jul:6,aug:7,agu:7,sep:8,oct:9,okt:9,nov:10,dec:11,des:11};const mStr=s.match(/(\d{1,2})\s+([a-z]{3,})\s+(\d{4})/i)||s.match(/([a-z]{3,})\s+(\d{1,2}),?\s+(\d{4})/i);if(mStr){const isNF=/^\d/.test(mStr[0]);const day=isNF?+mStr[1]:+mStr[2];const monStr=(isNF?mStr[2]:mStr[1]).toLowerCase().slice(0,3);const mon=mn[monStr];const year=+mStr[3];if(mon!==undefined)return new Date(year,mon,day);}let d=new Date(s);if(!isNaN(d)&&d.getFullYear()>2000)return d;const p=s.split(/[\/\-\.]/);if(p.length===3){if(p[2].length===4){d=new Date(`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`);if(!isNaN(d)&&d.getFullYear()>2000)return d;}if(p[0].length===4){d=new Date(`${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`);if(!isNaN(d)&&d.getFullYear()>2000)return d;}}return null;}
+  function toISO(d){if(!d)return"";const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),dy=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${dy}`;}
+  function exportXLSX(rows,fname,sheet="Data"){const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();ws['!cols']=Object.keys(rows[0]||{}).map(k=>({wch:Math.max(k.length+2,18)}));XLSX.utils.book_append_sheet(wb,ws,sheet.slice(0,31));XLSX.writeFile(wb,fname);}
+  function ImpBadge({imp}){const s=impStyle[imp]||impStyle.LOW;return <span style={{background:s.bg,color:s.txt,border:`1px solid ${s.bdr}`,borderRadius:9999,padding:"3px 10px",fontSize:10,fontWeight:800,letterSpacing:"0.05em",textTransform:"uppercase"}}>{imp}</span>;}
+  function StatusSelect({value,rowId,onUpdate,disabled}){
+    const cfg={"Untouched":{bg:"rgba(130,130,135,0.10)",txt:"rgba(0,0,0,0.42)",bdr:"rgba(130,130,135,0.20)"},"On going":{bg:"rgba(175,100,40,0.10)",txt:"#A86428",bdr:"rgba(175,100,40,0.22)"},"Solved":{bg:"rgba(45,140,90,0.10)",txt:"#2D8C5A",bdr:"rgba(45,140,90,0.22)"},"Not Problem to solve":{bg:"rgba(185,50,42,0.10)",txt:"#B8332A",bdr:"rgba(185,50,42,0.22)"}};
+    const c=cfg[value]||cfg["Untouched"];
+    return <select value={value} onChange={e=>onUpdate(rowId,e.target.value)} disabled={disabled} className="status-sel" style={{background:c.bg,color:c.txt,borderColor:c.bdr,opacity:disabled?.5:1}}>
+      <option value="Untouched">&#9898; Untouched</option>
+      <option value="On going">&#128993; On going</option>
+      <option value="Solved">&#128994; Solved</option>
+      <option value="Not Problem to solve">&#128308; Not Problem</option>
+    </select>;
+  }
+
+  function parseSheetResp(resp,gidStr){
+    if(!resp?.table)return[];
+    let headers=resp.table.cols.map(c=>(c.label||"").trim());
+    let cells=resp.table.rows.map(r=>r.c.map(cell=>({f:(!cell||cell.v==null?"":String(cell.f||cell.v)),v:(!cell||cell.v==null?"":String(cell.v))})));
+    let rows=cells.map(r=>r.map(cell=>cell.f));let hoff=1;
+    if(!headers.some(h=>/tanggal|cabang|issue|sumber/i.test(h))&&rows.length){if(rows[0].some(v=>/tanggal|cabang|issue|sumber/i.test(v))){headers=rows[0];rows=rows.slice(1);cells=cells.slice(1);hoff=2;}}
+    const h=headers.map(x=>x.toLowerCase().trim()),ci={};
+    h.forEach((v,i)=>{
+      if(v.includes("tanggal")||v.includes("date"))ci.date=i;
+      if((v.includes("cabang")||v.includes("branch"))&&!v.includes("nama"))ci.branch=i;
+      if(v.includes("rating")||v.includes("google rating"))ci.rating=i;
+      if(v.includes("sumber")||v.includes("source"))ci.source=i;
+      if(v.includes("komentar")||v.includes("comment"))ci.comment=i;
+      if(v==="issue"||v.startsWith("issue")||v.includes("kategori")||v.includes("category")||v.includes("issue"))ci.issue=i;
+      if(v.includes("inti permasalahan")||v.includes("summary")||v.includes("inti"))ci.summary=i;
+      if(v==="status"||v.includes("status pelacakan"))ci.status=i;
+      if(v.includes("feedback")&&!v.includes("inti"))ci.feedback=i;
+      if((v.includes("nama customer")||v.includes("nama member")||v.includes("customer"))&&!v.includes("cabang"))ci.customer=i;
+    });
+    if(ci.date==null){const ncols=cells[0]?.length||0;for(let col=0;col<ncols;col++){if(cells.some(r=>r[col]?.v&&/^Date\(\d+,\d+,\d+\)$/.test(r[col].v))){ci.date=col;break;}}}
+    if(ci.source==null){const srcKw=/^(google review|whatsapp|instagram|quick response|in-apps|panggilan)$/i;const ncols=cells[0]?.length||0;for(let col=0;col<ncols;col++){const vals=cells.map(r=>r[col]?.f||r[col]?.v||"").filter(Boolean);if(vals.filter(v=>srcKw.test(v.trim())).length>vals.length*0.5){ci.source=col;break;}}}
+    if(ci.issue==null){const catKw=/^(komplain fasilitas|komplain alat|komplain kebersihan|komplain staff|request fasilitas|komplain parkiran|request alat|komplain membership|komplain kelas|request kelas|komplain aplikasi)$/i;const ncols=cells[0]?.length||0;for(let col=0;col<ncols;col++){const vals=cells.map(r=>r[col]?.f||r[col]?.v||"").filter(Boolean);if(vals.filter(v=>catKw.test(v.trim())).length>vals.length*0.3){ci.issue=col;break;}}}
+    const out=[];
+    rows.forEach((r,i)=>{
+      const rawCat=(r[ci.issue]||"").trim();if(!rawCat)return;
+      const com=(r[ci.comment]||"").trim(),sum=ci.summary!=null?(r[ci.summary]||"").trim():"";
+      const rat=parseInt(r[ci.rating]);
+      const dsRaw=(ci.date!=null?(cells[i]?.[ci.date]?.v||""):"").trim();
+      const dsDisplay=(ci.date!=null?(cells[i]?.[ci.date]?.f||cells[i]?.[ci.date]?.v||r[ci.date]||""):(r[ci.date]||"")).trim();
+      const ds=dsRaw||dsDisplay;
+      const feedbackVal=ci.feedback!=null?(r[ci.feedback]||"").trim():"";
+      const sheetStat=(ci.status!=null?(r[ci.status]||"").trim():"")||"Untouched";
+      const rawStat=feedbackVal.length>0?"Solved":sheetStat;
+      out.push({id:`${gidStr}_${i}`,realRow:i+hoff+1,gid:gidStr,dateStr:dsDisplay,dateParsed:parseDate(dsRaw||dsDisplay),
+        branch:normalizeBranch((r[ci.branch]||"").trim()),cat:rawCat,source:(r[ci.source]||"").trim(),
+        rating:isNaN(rat)?null:rat,intiPermasalahan:sum.length>2?sum:com,
+        customer:(ci.customer!=null?(r[ci.customer]||"").trim():""),
+        status:rawStat,originalStatus:rawStat,sub:classifySub(rawCat,com+" "+sum)});
+    });
+    return out;
+  }
+
+  function fetchOneSheet(gidStr){
+    return new Promise(resolve=>{
+      const cb="__gs"+Date.now()+"_"+gidStr;
+      const timeout=setTimeout(()=>{delete window[cb];resolve([]);},10000);
+      window[cb]=resp=>{clearTimeout(timeout);delete window[cb];resolve(parseSheetResp(resp,gidStr));};
+      const s=document.createElement("script");
+      s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&gid=${gidStr}`;
+      s.onerror=()=>{clearTimeout(timeout);delete window[cb];resolve([]);};
+      document.head.appendChild(s);
+    });
+  }
+
+  function LoginScreen({onLogin}){
+    const [step,setStep]=useState("pick");
+    const [selected,setSelected]=useState(null);
+    const [pw,setPw]=useState("");
+    const [err,setErr]=useState("");
+    function handlePick(div){setSelected(div);setStep("password");setPw("");setErr("");}
+    function handleLogin(){if(pw===selected.password){onLogin(selected);}else{setErr("Password salah. Coba lagi.");setPw("");}}
+    return (
+      <div className="login-bg">
+        <div className="login-card">
+          <div className="glass" style={{padding:"36px 32px"}}>
+            <div style={{textAlign:"center",marginBottom:28}}>
+              <div style={{fontSize:11,fontWeight:800,color:"rgba(0,0,0,0.40)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:8}}>FTL GYM</div>
+              <h1 style={{fontSize:28,fontWeight:800,color:"rgba(0,0,0,0.86)",letterSpacing:"-0.02em",marginBottom:6}}>Complaint Analysis</h1>
+              <p style={{fontSize:13,color:"rgba(0,0,0,0.42)",fontWeight:500}}>{step==="pick"?"Pilih divisi Anda untuk melanjutkan":"Masukkan password divisi"}</p>
+            </div>
+            {step==="pick"&&(
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {DIVISIONS.map(div=>(
+                  <button key={div.key} className="division-btn" onClick={()=>handlePick(div)}>
+                    <div style={{display:"flex",alignItems:"center",gap:12}}>
+                      <div style={{width:10,height:10,borderRadius:"50%",background:div.color,flexShrink:0}}/>
+                      <div>
+                        <div style={{fontSize:14,fontWeight:700,color:"rgba(0,0,0,0.82)"}}>{div.label}</div>
+                        {div.key==="ALL"&&<div style={{fontSize:11,color:"rgba(0,0,0,0.40)",marginTop:1}}>Akses semua divisi</div>}
+                      </div>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.30)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                ))}
+              </div>
+            )}
+            {step==="password"&&(
+              <div>
+                <button onClick={()=>setStep("pick")} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",color:"rgba(0,0,0,0.45)",fontSize:13,fontWeight:600,marginBottom:20,padding:0}}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  Kembali
+                </button>
+                <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:14,background:"rgba(0,0,0,0.03)",marginBottom:20,border:"1px solid rgba(0,0,0,0.06)"}}>
+                  <div style={{width:10,height:10,borderRadius:"50%",background:selected.color,flexShrink:0}}/>
+                  <span style={{fontSize:14,fontWeight:700,color:"rgba(0,0,0,0.80)"}}>{selected.label}</span>
+                </div>
+                <input type="password" value={pw} onChange={e=>{setPw(e.target.value);setErr("");}} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="Masukkan password..."
+                  style={{width:"100%",padding:"12px 16px",borderRadius:14,border:`1px solid ${err?"rgba(185,50,42,0.40)":"rgba(0,0,0,0.12)"}`,fontSize:14,fontWeight:500,color:"rgba(0,0,0,0.82)",background:"rgba(255,255,255,0.90)",outline:"none",marginBottom:err?8:16,boxShadow:"inset 0 1px 3px rgba(0,0,0,0.06)"}} autoFocus/>
+                {err&&<p style={{fontSize:12,color:"#B8332A",marginBottom:12,fontWeight:600}}>{err}</p>}
+                <button onClick={handleLogin} style={{width:"100%",padding:"12px",borderRadius:14,background:"rgba(28,28,30,0.88)",color:"#fff",border:"none",cursor:"pointer",fontSize:14,fontWeight:700,boxShadow:"0 4px 12px rgba(0,0,0,0.20)",transition:"all 0.14s"}} onMouseEnter={e=>e.target.style.background="rgba(28,28,30,1)"} onMouseLeave={e=>e.target.style.background="rgba(28,28,30,0.88)"}>Masuk</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function exportAIExcel(modal,division){
+    const today=new Date(),todayStr=toISO(today),wb=XLSX.utils.book_new();
+    const summaryRows=[["FTL GYM - AI Analysis Report"],[""],["Divisi",division.label],["Judul Analisa",modal.title],["Tanggal Generate",todayStr],["Berlaku Hingga",toISO(new Date(today.getFullYear(),today.getMonth(),today.getDate()+30))],[""],["RINGKASAN"],[modal.summary||""],[""],["ACTION PLAN & TIMELINE"],["No","Action Item","Detail / Keterangan","Estimasi (Hari)","Target Selesai"]];
+    let cumDays=0;
+    modal.items.forEach((item,i)=>{cumDays+=item.days;const target=new Date(today);target.setDate(target.getDate()+Math.min(cumDays,30));summaryRows.push([i+1,item.action,item.detail||"",item.days,toISO(target)]);});
+    const ws=XLSX.utils.aoa_to_sheet(summaryRows);ws['!cols']=[{wch:5},{wch:50},{wch:60},{wch:16},{wch:16}];
+    XLSX.utils.book_append_sheet(wb,ws,"AI Action Plan");XLSX.writeFile(wb,`FTL_AI_${modal.title.replace(/[^a-zA-Z0-9]/g,'_')}_${todayStr}.xlsx`);
+  }
+
+  function exportAIPDF(modal,division){
+    const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    const today=new Date(),todayStr=today.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+    const deadlineDate=new Date(today);deadlineDate.setDate(deadlineDate.getDate()+30);
+    const deadlineStr=deadlineDate.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+    const W=210,ml=18,mr=18,cw=W-ml-mr;
+    doc.setFillColor(250,249,246);doc.rect(0,0,210,297,"F");
+    doc.setFillColor(28,28,30);doc.roundedRect(ml,12,cw,22,3,3,"F");
+    doc.setTextColor(255,255,255);doc.setFontSize(7);doc.setFont("helvetica","bold");
+    doc.text("FTL GYM  |  AI ANALYSIS REPORT",ml+6,21);doc.setFontSize(13);doc.text(modal.title,ml+6,29);
+    doc.setFillColor(240,240,242);doc.roundedRect(ml,38,cw,16,2,2,"F");
+    doc.setTextColor(80,80,90);doc.setFontSize(7.5);doc.setFont("helvetica","normal");
+    doc.text(`Divisi: ${division.label}`,ml+6,44);doc.text(`Tanggal: ${todayStr}`,ml+6,50);
+    doc.text(`Berlaku s.d.: ${deadlineStr}`,ml+80,44);doc.text(`Periode Analisa: 3 Bulan Terakhir`,ml+80,50);
+    let y=60;
+    if(modal.summary){doc.setFillColor(232,242,255);doc.roundedRect(ml,y,cw,14,2,2,"F");doc.setTextColor(30,60,120);doc.setFontSize(7.5);doc.setFont("helvetica","bold");doc.text("RINGKASAN:",ml+5,y+5.5);doc.setFont("helvetica","normal");doc.setTextColor(40,40,60);const sumLines=doc.splitTextToSize(modal.summary,cw-10);doc.text(sumLines[0]||"",ml+5,y+11);y+=18;}
+    doc.setFontSize(8);doc.setFont("helvetica","bold");doc.setTextColor(80,80,90);doc.text("ACTION PLAN & TIMELINE",ml,y+5);y+=10;
+    let cumDays=0;
+    modal.items.forEach((item,i)=>{
+      cumDays=Math.min(cumDays+item.days,30);const target=new Date(today);target.setDate(target.getDate()+cumDays);
+      const targetStr=target.toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
+      const cardH=20;doc.setFillColor(255,255,255);doc.roundedRect(ml,y,cw,cardH,2,2,"F");doc.setDrawColor(220,220,225);doc.roundedRect(ml,y,cw,cardH,2,2,"S");
+      doc.setFillColor(28,28,30);doc.circle(ml+7,y+10,5,"F");doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont("helvetica","bold");doc.text(String(i+1),ml+5.5,y+12.5);
+      doc.setTextColor(20,20,30);doc.setFontSize(9);doc.setFont("helvetica","bold");doc.text(item.action||"",ml+16,y+7.5);
+      if(item.detail){doc.setFontSize(7.5);doc.setFont("helvetica","normal");doc.setTextColor(100,100,110);doc.text(item.detail,ml+16,y+13.5);}
+      doc.setFillColor(220,245,230);doc.roundedRect(ml+cw-30,y+5,28,10,2,2,"F");doc.setTextColor(30,120,70);doc.setFontSize(7.5);doc.setFont("helvetica","bold");doc.text(`${item.days} hari | ${targetStr}`,ml+cw-29,y+11.5);
+      y+=cardH+4;if(y>265){doc.addPage();doc.setFillColor(250,249,246);doc.rect(0,0,210,297,"F");y=15;}
+    });
+    doc.setFillColor(240,240,242);doc.rect(0,280,210,17,"F");doc.setTextColor(140,140,150);doc.setFontSize(7);doc.setFont("helvetica","normal");
+    doc.text("Generated by FTL GYM Complaint Intelligence Dashboard | Powered by Gemini AI",ml,290);doc.text(todayStr,W-mr-30,290);
+    doc.save(`FTL_AI_${modal.title.replace(/[^a-zA-Z0-9]/g,'_')}_${todayStr.replace(/ /g,'_')}.pdf`);
+  }
+
+  // ════ FIX 1: MonthDropdown — Apple-style custom React dropdown (no native select overlay) ════
+  function MonthDropdown({monthRanges,smartLabel,isMonthActive,setFrom,setTo}){
+    const [mOpen,setMOpen]=useState(false);
+    const [pos,setPos]=useState({top:0,left:0});
+    const btnRef=useRef(null);
+    const dropRef=useRef(null);
+
+    useEffect(()=>{
+      const h=e=>{
+        if(btnRef.current&&!btnRef.current.contains(e.target)&&dropRef.current&&!dropRef.current.contains(e.target))setMOpen(false);
+      };
+      document.addEventListener("mousedown",h);
+      return()=>document.removeEventListener("mousedown",h);
+    },[]);
+
+    function handleOpen(){
+      if(!mOpen&&btnRef.current){
+        const r=btnRef.current.getBoundingClientRect();
+        setPos({top:r.bottom+window.scrollY+8,left:r.left+window.scrollX});
+      }
+      setMOpen(o=>!o);
+    }
+
+    const dropdown = mOpen ? ReactDOM.createPortal(
+      <div ref={dropRef} style={{position:"absolute",top:pos.top,left:pos.left,minWidth:200,zIndex:2147483647,
+        background:"rgba(255,255,255,0.98)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",
+        border:"1px solid rgba(0,0,0,0.10)",
+        borderRadius:16,boxShadow:"0 4px 6px rgba(0,0,0,0.05),0 10px 40px rgba(0,0,0,0.15),0 2px 8px rgba(0,0,0,0.08)",
+        overflow:"hidden",animation:"fu 0.15s ease both"}}>
+        <div style={{padding:6}}>
+          {[...monthRanges].reverse().map(mr=>{
+            const isActive=isMonthActive(mr);
+            return(
+              <button key={`${mr.year}-${mr.month}`}
+                onClick={()=>{setFrom(mr.from);setTo(mr.to);setMOpen(false);}}
+                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
+                  padding:"9px 14px",borderRadius:10,border:"none",
+                  background:isActive?"rgba(28,28,30,0.88)":"transparent",
+                  color:isActive?"#fff":"rgba(0,0,0,0.72)",
+                  cursor:"pointer",fontSize:13,fontWeight:isActive?700:500,fontFamily:"inherit",
+                  transition:"background 0.10s",textAlign:"left"}}
+                onMouseEnter={e=>{if(!isActive)e.currentTarget.style.background="rgba(0,0,0,0.06)";}}
+                onMouseLeave={e=>{if(!isActive)e.currentTarget.style.background="transparent";}}>
+                <span>{mr.labelFull} {mr.year}</span>
+                {isActive&&<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+              </button>
+            );
+          })}
+        </div>
+      </div>,
+      document.body
+    ) : null;
+
+    return(
+      <>
+        <button ref={btnRef} onClick={handleOpen} className="pill-btn"
+          style={{padding:"6px 14px",gap:6,background:mOpen?"rgba(28,28,30,0.88)":"rgba(255,255,255,0.75)",color:mOpen?"#fff":"rgba(0,0,0,0.75)"}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.6,flexShrink:0}}>
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span style={{fontWeight:700,fontSize:12,whiteSpace:"nowrap"}}>{smartLabel||"Pilih Bulan"}</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            style={{opacity:0.5,flexShrink:0,transform:mOpen?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.15s ease"}}>
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        {dropdown}
+      </>
+    );
+  }
+
+  // ════ AIAnalysis: FIX 2 bigger button (paddingLeft/Right:20, paddingTop/Bottom:10, borderRadius:14) + FIX 3 zIndex:3000 ════
+  function AIAnalysis({divData,division,plans,branches,monthRanges}){
+    const [open,setOpen]=useState(false);
+    const [loading,setLoading]=useState(false);
+    const [modal,setModal]=useState(null);
+    const [error,setError]=useState(null);
+    const [customModal,setCM]=useState(false);
+    const [custom,setCustom]=useState("");
+    const [active,setActive]=useState(null);
+    const [aiPos,setAIPos]=useState({top:0,right:0});
+    const boxRef=useRef(null);
+
+    useEffect(()=>{
+      const handler=e=>{if(boxRef.current&&!boxRef.current.contains(e.target))setOpen(false);};
+      document.addEventListener("mousedown",handler);
+      return()=>document.removeEventListener("mousedown",handler);
+    },[]);
+
+    function buildContext(){
+      const sorted=[...monthRanges].sort((a,b)=>b.year-a.year||b.month-a.month).slice(0,3);
+      const labels=sorted.map(m=>m.labelFull+" "+m.year).join(", ");
+      const from=sorted.length?new Date(sorted[sorted.length-1].from):null;
+      const recent=from?divData.filter(d=>d.dateParsed&&d.dateParsed>=from):divData;
+      const ic={},bc={},sc={};
+      recent.forEach(d=>{ic[d.sub]=(ic[d.sub]||0)+1;bc[d.branch]=(bc[d.branch]||0)+1;sc[d.status]=(sc[d.status]||0)+1;});
+      const ti=Object.entries(ic).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>`${k}(${v})`).join(", ");
+      const tb=Object.entries(bc).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>`${k}(${v})`).join(", ");
+      const ts=Object.entries(sc).map(([k,v])=>`${k}:${v}`).join(", ");
+      return{ctx:`Divisi: ${division.label}\nPeriode: ${labels}\nTotal keluhan: ${recent.length}\nTop isu: ${ti}\nTop cabang: ${tb}\nStatus: ${ts}`,labels};
+    }
+
+    const SUFFIX=`\n\nKonteks: Konsultan operasional jaringan gym FTL. Gunakan terminologi: member, cabang/outlet, FC, PT, GX, MC, OB, staff, loker, alat gym, treadmill, dumbbell, kebersihan, fasilitas, parkir, membership, kelas, Google Review, Quick Response, Wh\u0041tsApp.\n\nBALAS HANYA JSON valid, tidak ada teks lain:\n{"summary":"ringkasan 1-2 kalimat spesifik","items":[{"action":"langkah konkret maks 70 karakter","detail":"penjelasan maks 120 karakter","days":3}]}\nBuat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
+
+    async function analyze(type,customText){
+      setOpen(false);setCM(false);setLoading(true);setError(null);setModal(null);setActive(type);
+      try{
+        const{ctx,labels}=buildContext();
+        const titles={freq:"Isu Paling Sering Muncul",impact:"Isu Paling Berdampak",outlet:"Outlet Terbanyak Komplain",focus:"Rekomendasi Fokus Bulan Ini",custom:customText||"Analisa Custom"};
+        const prompts={
+          freq:`Data keluhan FTL Gym:\n${ctx}\n\nAnalisa sub-issue paling sering muncul, berikan action items konkret.${SUFFIX}`,
+          impact:`Data keluhan FTL Gym:\n${ctx}\n\nAnalisa sub-issue paling berdampak pada kepuasan member dan bisnis.${SUFFIX}`,
+          outlet:`Data keluhan FTL Gym:\n${ctx}\n\nAnalisa outlet/cabang dengan keluhan terbanyak, action untuk manajemen.${SUFFIX}`,
+          focus:`Data keluhan FTL Gym:\n${ctx}\n\nRekomendasi fokus bulan ini dari 3 aspek: (1) sub-issue paling sering & berdampak, (2) outlet butuh intervensi, (3) pola status keluhan. Gabungkan jadi action terintegrasi, urutkan paling mendesak.${SUFFIX}`,
+          custom:`Data keluhan FTL Gym:\n${ctx}\n\nPertanyaan: ${customText}\n\nJawab dengan action items konkret.${SUFFIX}`
+        };
+        const res=await fetch(GEMINI_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompts[type]}]}],generationConfig:{maxOutputTokens:1500,temperature:0.6}})});
+        const data=await res.json();
+        if(data.error)throw new Error(data.error.message);
+        const text=data.candidates?.[0]?.content?.parts?.[0]?.text||"";
+        const jm=text.match(/\{[\s\S]*\}/);
+        if(!jm)throw new Error("Format respons tidak valid, coba lagi.");
+        const parsed=JSON.parse(jm[0]);
+        setModal({title:titles[type],summary:parsed.summary,items:parsed.items||[]});
+      }catch(e){setError(e.message);}
+      setLoading(false);
+    }
+
+    const menuItems=[
+      {id:"freq",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,label:"Isu Paling Sering"},
+      {id:"impact",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,label:"Isu Paling Berdampak"},
+      {id:"outlet",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,label:"Outlet Terbanyak Komplain"},
+      {id:"focus",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,label:"Rekomendasi Fokus Bulan Ini"},
+      {id:"custom",icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>,label:"Tulis Pertanyaan Sendiri..."},
+    ];
+
+    return (
+      <>
+        <div ref={boxRef} style={{position:"relative",display:"inline-block"}}>
+          {/* Analysis Box button — persegi dengan rounded corner, tanpa pill class */}
+          <button onClick={()=>{
+            if(!loading){
+              if(!open&&boxRef.current){
+                const r=boxRef.current.getBoundingClientRect();
+                setAIPos({top:r.bottom+window.scrollY+8,right:window.innerWidth-r.right});
+              }
+              setOpen(o=>!o);
+            }
+          }}
+            style={{gap:8,fontWeight:700,fontSize:13,
+              paddingLeft:20,paddingRight:20,paddingTop:10,paddingBottom:10,
+              borderRadius:14,
+              background:open?"rgba(28,28,30,0.88)":"rgba(255,255,255,0.75)",
+              color:open?"#fff":"rgba(0,0,0,0.72)",
+              backdropFilter:"blur(20px) saturate(160%)",WebkitBackdropFilter:"blur(20px) saturate(160%)",
+              borderTop:"1px solid rgba(255,255,255,0.90)",borderRight:"1px solid rgba(255,255,255,0.50)",
+              borderBottom:"1px solid rgba(255,255,255,0.35)",borderLeft:"1px solid rgba(255,255,255,0.50)",
+              backgroundImage:"linear-gradient(180deg,rgba(255,255,255,0.50) 0%,rgba(255,255,255,0.00) 100%)",
+              boxShadow:"inset 0 0.5px 0 rgba(255,255,255,0.95),0 2px 6px rgba(0,0,0,0.05),0 4px 12px rgba(0,0,0,0.06)",
+              cursor:"pointer",transition:"all 0.14s ease",
+              fontFamily:"'SF Pro Display',-apple-system,sans-serif",
+              display:"inline-flex",alignItems:"center"}}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:6}}>
+              <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+            {loading?"Menganalisa...":"Analysis Box"}
+            {!loading&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.5,transform:open?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.15s",marginLeft:6}}><polyline points="6 9 12 15 18 9"/></svg>}
+          </button>
+          {/* Portal: render dropdown langsung di body, bebas dari semua stacking context */}
+          {open&&ReactDOM.createPortal(
+            <div style={{position:"absolute",top:aiPos.top,right:aiPos.right,minWidth:250,zIndex:2147483647,
+              background:"rgba(255,255,255,0.98)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",
+              border:"1px solid rgba(0,0,0,0.10)",
+              borderRadius:16,boxShadow:"0 4px 6px rgba(0,0,0,0.05),0 10px 40px rgba(0,0,0,0.15),0 2px 8px rgba(0,0,0,0.08)",
+              overflow:"hidden",animation:"fu 0.15s ease both"}}>
+              <div style={{padding:"6px"}}>
+                {menuItems.map(item=>(
+                  <button key={item.id}
+                    onClick={()=>{if(item.id==="custom"){setOpen(false);setCM(true);}else{analyze(item.id);}}}
+                    style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,border:"none",background:"transparent",cursor:"pointer",fontSize:13,fontWeight:600,color:"rgba(0,0,0,0.72)",textAlign:"left",fontFamily:"inherit",transition:"background 0.10s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,0.06)"}
+                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                    <span style={{color:"rgba(0,0,0,0.40)",flexShrink:0}}>{item.icon}</span>
+                    {item.label}
+                    {item.id==="custom"&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.28)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft:"auto"}}><polyline points="9 18 15 12 9 6"/></svg>}
+                  </button>
+                ))}
+              </div>
+            </div>,
+            document.body
+          )}
+        </div>
+
+        {customModal&&(
+          <div style={{position:"fixed",inset:0,zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"rgba(0,0,0,0.25)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}} onClick={e=>e.target===e.currentTarget&&setCM(false)}>
+            <div style={{width:"100%",maxWidth:520,borderRadius:24,background:"rgba(255,255,255,0.88)",backdropFilter:"blur(62px) saturate(200%)",WebkitBackdropFilter:"blur(62px) saturate(200%)",borderTop:"1px solid rgba(255,255,255,0.92)",borderRight:"1px solid rgba(255,255,255,0.55)",borderBottom:"1px solid rgba(255,255,255,0.40)",borderLeft:"1px solid rgba(255,255,255,0.55)",boxShadow:"inset 0 0.5px 0 rgba(255,255,255,0.98),0 32px 80px rgba(0,0,0,0.20)",padding:"28px 28px 24px",animation:"fu 0.20s ease both"}}>
+              <div style={{fontSize:17,fontWeight:800,color:"rgba(0,0,0,0.84)",marginBottom:6,letterSpacing:"-0.01em"}}>Tulis Pertanyaan Analisa</div>
+              <div style={{fontSize:12,color:"rgba(0,0,0,0.40)",marginBottom:18,fontWeight:500}}>AI akan menganalisa berdasarkan data {division.label} 3 bulan terakhir</div>
+              <textarea value={custom} onChange={e=>setCustom(e.target.value)} placeholder="Contoh: Cabang mana yang paling perlu perhatian khusus bulan ini?" rows={4}
+                style={{width:"100%",padding:"12px 16px",borderRadius:14,border:"1px solid rgba(0,0,0,0.12)",fontSize:13,fontWeight:500,color:"rgba(0,0,0,0.78)",background:"rgba(255,255,255,0.90)",outline:"none",resize:"none",fontFamily:"inherit",lineHeight:1.6,boxShadow:"inset 0 1px 4px rgba(0,0,0,0.06)"}} autoFocus/>
+              <div style={{display:"flex",gap:8,marginTop:14,justifyContent:"flex-end"}}>
+                <button onClick={()=>setCM(false)} className="pill-btn" style={{fontWeight:600,fontSize:13}}>Batal</button>
+                <button onClick={()=>custom.trim()&&analyze("custom",custom)} disabled={!custom.trim()} className="pill-btn active-black" style={{fontWeight:700,fontSize:13,padding:"8px 24px",opacity:!custom.trim()?.45:1}}>Analisa</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {modal&&(
+          <div style={{position:"fixed",inset:0,zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"rgba(0,0,0,0.25)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)"}} onClick={e=>e.target===e.currentTarget&&setModal(null)}>
+            <div style={{width:"100%",maxWidth:600,maxHeight:"88vh",overflowY:"auto",borderRadius:28,background:"rgba(255,255,255,0.78)",backdropFilter:"blur(62px) saturate(200%) brightness(1.05)",WebkitBackdropFilter:"blur(62px) saturate(200%) brightness(1.05)",borderTop:"1px solid rgba(255,255,255,0.92)",borderRight:"1px solid rgba(255,255,255,0.55)",borderBottom:"1px solid rgba(255,255,255,0.40)",borderLeft:"1px solid rgba(255,255,255,0.55)",boxShadow:"inset 0 0.5px 0 rgba(255,255,255,0.98),0 40px 100px rgba(0,0,0,0.22)",animation:"fu 0.22s ease both"}}>
+              <div style={{padding:"22px 24px 16px",borderBottom:"1px solid rgba(255,255,255,0.40)",display:"flex",justifyContent:"space-between",alignItems:"flex-start",position:"sticky",top:0,background:"rgba(255,255,255,0.82)",backdropFilter:"blur(40px)",WebkitBackdropFilter:"blur(40px)",borderRadius:"28px 28px 0 0",zIndex:1}}>
+                <div>
+                  <div style={{fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:"0.10em",marginBottom:5,display:"flex",alignItems:"center",gap:6}}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.40)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                    AI Analysis | {division.label}
+                  </div>
+                  <div style={{fontSize:20,fontWeight:800,color:"rgba(0,0,0,0.86)",letterSpacing:"-0.01em"}}>{modal.title}</div>
+                </div>
+                <button onClick={()=>setModal(null)} style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.08)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.60)",cursor:"pointer",fontSize:13,color:"rgba(0,0,0,0.50)",fontWeight:700,flexShrink:0,marginLeft:16,boxShadow:"inset 0 0.5px 0 rgba(255,255,255,0.80)"}}>X</button>
+              </div>
+              {modal.summary&&<div style={{padding:"14px 24px",background:"rgba(0,122,255,0.06)",borderBottom:"1px solid rgba(255,255,255,0.40)"}}><p style={{fontSize:13,color:"rgba(0,0,0,0.65)",lineHeight:1.65,fontWeight:500}}>{modal.summary}</p></div>}
+              <div style={{padding:"16px 24px 8px"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.30)",textTransform:"uppercase",letterSpacing:"0.10em",marginBottom:10}}>Action Items & Timeline</div>
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  {modal.items.map((item,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"flex-start",gap:14,padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,0.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderTop:"1px solid rgba(255,255,255,0.90)",borderRight:"1px solid rgba(255,255,255,0.50)",borderBottom:"1px solid rgba(255,255,255,0.35)",borderLeft:"1px solid rgba(255,255,255,0.50)",boxShadow:"inset 0 0.5px 0 rgba(255,255,255,0.95),0 2px 8px rgba(0,0,0,0.05)"}}>
+                      <div style={{width:28,height:28,borderRadius:"50%",background:"rgba(28,28,30,0.88)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,flexShrink:0,marginTop:1}}>{i+1}</div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:5}}>
+                          <div style={{fontSize:14,fontWeight:700,color:"rgba(0,0,0,0.84)",lineHeight:1.4}}>{item.action}</div>
+                          <div style={{flexShrink:0,background:"rgba(45,140,90,0.10)",border:"1px solid rgba(45,140,90,0.22)",borderRadius:8,padding:"3px 10px",fontSize:11,fontWeight:800,color:"#2D8C5A",whiteSpace:"nowrap"}}>{item.days} hari</div>
+                        </div>
+                        {item.detail&&<div style={{fontSize:12,color:"rgba(0,0,0,0.44)",lineHeight:1.55}}>{item.detail}</div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{padding:"16px 24px 22px",borderTop:"1px solid rgba(255,255,255,0.40)",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>exportAIExcel(modal,division)} className="pill-btn" style={{fontSize:12,fontWeight:700,color:"#2D8C5A",gap:5}}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Excel
+                  </button>
+                  <button onClick={()=>exportAIPDF(modal,division)} className="pill-btn" style={{fontSize:12,fontWeight:700,color:"#2E6DB4",gap:5}}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF
+                  </button>
+                </div>
+                <button onClick={()=>setModal(null)} className="pill-btn active-black" style={{fontWeight:700,fontSize:13,padding:"8px 24px"}}>Tutup</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {error&&!loading&&(
+          <div style={{position:"fixed",bottom:28,right:28,zIndex:9999,padding:"12px 20px",borderRadius:14,background:"rgba(185,50,42,0.90)",backdropFilter:"blur(20px)",color:"#fff",fontSize:13,fontWeight:600,boxShadow:"0 8px 24px rgba(185,50,42,0.30)",animation:"fu 0.2s ease both",display:"flex",alignItems:"center",gap:8}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {error}
+            <button onClick={()=>setError(null)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.7)",cursor:"pointer",fontSize:14,marginLeft:4}}>X</button>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  function Dashboard({division,onLogout}){
+    const [allData,setAllData]=useState([]);
+    const [localStatus,setLStat]=useState({});
+    const [fbLoaded,setFbLoaded]=useState(false);
+    const [statusToast,setToast]=useState(null);
+    const [divData,setDivData]=useState([]);
+
+    useEffect(()=>{
+      const db=firebase.database();const ref=db.ref("status");
+      ref.on("value",snapshot=>{const data=snapshot.val();if(data&&typeof data==="object")setLStat(data);setFbLoaded(true);},()=>setFbLoaded(true));
+      return()=>ref.off("value");
+    },[]);
+
+    const [filter,setFilter]=useState("Semua");
+    const [stFilt,setStFilt]=useState("Semua Status");
+    const [loading,setLoading]=useState(true);
+    const [err,setErr]=useState(null);
+    const [lastFetch,setLF]=useState(null);
+    const [drillSub,setDrill]=useState(null);
+    const [expRow,setExpRow]=useState(null);
+    const [expRL,setExpRL]=useState(10);
+    const [expBr,setExpBr]=useState(null);
+    const [brLim,setBrLim]=useState(10);
+    const [sortCfg,setSort]=useState(null);
+    const [dateFrom,setFrom]=useState("");
+    const [dateTo,setTo]=useState("");
+    const [sheets,setSheets]=useState([]);
+    const sheetsRef=useRef([]);
+    const drillRef=useRef(null);
+    const branchRef=useRef(null);
+
+    const dataWithStatus=useMemo(()=>allData.map(d=>({...d,status:localStatus[d.id]??d.status})),[allData,localStatus]);
+
+    function updateStatus(rowId,ns){
+      setLStat(prev=>({...prev,[rowId]:ns}));
+      setToast({id:rowId,state:"saving"});
+      firebase.database().ref(`status/${String(rowId)}`).set(ns)
+        .then(()=>{setToast({id:rowId,state:"saved"});setTimeout(()=>setToast(null),2000);})
+        .catch(e=>{console.warn("Firebase write failed:",e);setToast({id:rowId,state:"error"});setTimeout(()=>setToast(null),3000);});
+    }
+
+    useEffect(()=>{
+      if(division.key==="ALL"){setDivData(dataWithStatus);return;}
+      const div=DIVISIONS.find(d=>d.key===division.key);
+      if(!div||!div.match){setDivData(dataWithStatus);return;}
+      const sheetList=sheetsRef.current.length?sheetsRef.current:sheets;
+      if(!sheetList.length){setDivData(dataWithStatus);return;}
+      const matchingGids=sheetList.filter(s=>div.match.test(s.name)).map(s=>s.id);
+      if(!matchingGids.length){setDivData(dataWithStatus);return;}
+      setDivData(dataWithStatus.filter(d=>matchingGids.includes(d.gid)));
+    },[dataWithStatus,division,sheets,allData]);
+
+    function localDateF(iso){if(!iso)return null;const[y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d);}
+    const data=useMemo(()=>{
+      if(!dateFrom&&!dateTo)return divData;
+      const from=localDateF(dateFrom);const toD=localDateF(dateTo);if(toD)toD.setHours(23,59,59,999);
+      return divData.filter(d=>{if(!d.dateParsed)return true;if(from&&d.dateParsed<from)return false;if(toD&&d.dateParsed>toD)return false;return true;});
+    },[divData,dateFrom,dateTo]);
+
+    const filtered=useMemo(()=>data.filter(c=>(filter==="Semua"||c.cat===filter)&&(stFilt==="Semua Status"||c.status===stFilt)),[data,filter,stFilt]);
+    const dispFilt=useMemo(()=>data.filter(c=>(filter==="Semua"||c.cat===filter)&&(stFilt==="Semua Status"||c.status===stFilt||c.originalStatus===stFilt)),[data,filter,stFilt]);
+    const cats=useMemo(()=>[...new Set(data.map(c=>c.cat))],[data]);
+    const catCts=useMemo(()=>{const m={};data.filter(c=>stFilt==="Semua Status"||c.status===stFilt).forEach(c=>{m[c.cat]=(m[c.cat]||0)+1;});return m;},[data,stFilt]);
+    const subCts=useMemo(()=>countMap(filtered,"sub"),[filtered]);
+    const srcCts=useMemo(()=>countMap(filtered,"source"),[filtered]);
+    const gReviews=useMemo(()=>filtered.filter(c=>c.source==="Google Review"),[filtered]);
+    const oneStars=useMemo(()=>filtered.filter(c=>c.rating===1),[filtered]);
+    const branchSet=useMemo(()=>new Set(filtered.map(c=>c.branch)),[filtered]);
+    const daysCt=useMemo(()=>new Set(filtered.map(c=>c.dateStr)).size||1,[filtered]);
+    const maxSub=subCts[0]?.[1]||1;
+    const maxSrc=srcCts[0]?.[1]||1;
+
+    const plans0=useMemo(()=>subCts.map(([sub,ct])=>{
+      const raw=recoDB[sub]||{action:"Investigasi Ekstra",detail:"Selidiki pola operasional secara lebih intensif.",tl:"short",imp:"MEDIUM"};
+      let imp=raw.imp;if(ct>filtered.length*0.1||ct>=5)imp="HIGH";else if(ct===1&&filtered.length>5)imp="LOW";
+      const m=filtered.find(c=>c.sub===sub);
+      const ownerFromCat=getOwner(m?.cat||"",division.key);
+      const owner=division.key==="ALL"?ownerFromCat:(division.label);
+      return{sub,count:ct,action:raw.action,detail:raw.detail,tl:raw.tl,imp,owner:owner||"Operations",iv:{HIGH:3,MEDIUM:2,LOW:1}[imp]||1};
+    }),[subCts,filtered]);
+
+    const plans=useMemo(()=>{
+      const items=[...plans0];
+      if(sortCfg){items.sort((a,b)=>{let vA=a[sortCfg.k],vB=b[sortCfg.k];if(typeof vA==="string"){vA=vA.toLowerCase();vB=vB.toLowerCase();}if(vA<vB)return sortCfg.d==="asc"?-1:1;if(vA>vB)return sortCfg.d==="asc"?1:-1;return b.count-a.count;});}
+      else{items.sort((a,b)=>b.iv-a.iv||b.count-a.count);}
+      return items;
+    },[plans0,sortCfg]);
+
+    const ts=k=>setSort(s=>({k,d:s?.k===k&&s?.d==="desc"?"asc":"desc"}));
+    const Si=({col})=>{if(!sortCfg||sortCfg.k!==col)return<span style={{opacity:.2,marginLeft:2}}>&#8597;</span>;return<span style={{marginLeft:2}}>{sortCfg.d==="asc"?"&#8593;":"&#8595;"}</span>;};
+
+    const matrix=useMemo(()=>{
+      const m={hE:[],hH:[],lE:[],lH:[]};
+      plans.forEach(p=>{const hi=p.iv>=2.5||(p.iv===2&&p.count>=2),hd=p.count>=Math.max(8,filtered.length*0.15)||p.sub.includes("Capacity")||p.sub.includes("Upgrade");m[(hi?"h":"l")+(hd?"H":"E")].push(p);});
+      return m;
+    },[plans,filtered]);
+
+    function barColor(i,n){const t=n<=1?0:i/(n-1);const h=Math.round(t*45);const s=Math.round(75-t*20);const l=Math.round(42+t*18);return `hsl(${h},${s}%,${l}%)`;}
+
+    const branches=useMemo(()=>{
+      const bc=countMap(dispFilt,"branch"),max=bc[0]?.[1]||1,total=bc.length||1;
+      return bc.map(([branch,count],i)=>{
+        const issues=dispFilt.filter(c=>c.branch===branch);
+        issues.sort((a,b)=>{const iA=plans0.find(p=>p.sub===a.sub)?.iv||1,iB=plans0.find(p=>p.sub===b.sub)?.iv||1;return iB-iA;});
+        const critCt=issues.filter(d=>(plans0.find(p=>p.sub===d.sub)?.imp||'LOW')==='HIGH').length;
+        return{branch,count,issues,critCt,pct:(count/max)*100,barColor:barColor(i,total)};
+      });
+    },[dispFilt,plans0]);
+
+    const monthRanges=useMemo(()=>{
+      const map={};
+      divData.forEach(d=>{if(!d.dateParsed)return;const y=d.dateParsed.getFullYear(),m=d.dateParsed.getMonth();const key=`${y}-${String(m).padStart(2,'0')}`;if(!map[key])map[key]={label:MONTHS_SHORT[m],labelFull:MONTHS_ID[m],year:y,month:m};});
+      return Object.values(map).sort((a,b)=>a.year-b.year||a.month-b.month).map(({label,labelFull,year,month})=>({label,labelFull,from:toISO(new Date(year,month,1)),to:toISO(new Date(year,month+1,0)),month,year}));
+    },[divData]);
+
+    const isMonthActive=mr=>dateFrom===mr.from&&dateTo===mr.to;
+
+    const smartLabel=useMemo(()=>{
+      if(!dateFrom||!dateTo)return"";
+      const d1=new Date(dateFrom),d2=new Date(dateTo);if(isNaN(d1)||isNaN(d2))return"";
+      const m1=d1.getMonth(),m2=d2.getMonth(),y1=d1.getFullYear(),y2=d2.getFullYear();
+      if(m1===m2&&y1===y2)return`${MONTHS_ID[m1]} ${y1}`;
+      if(y1===y2)return`${MONTHS_ID[m1]} - ${MONTHS_ID[m2]} ${y1}`;
+      return`${MONTHS_ID[m1]} ${y1} - ${MONTHS_ID[m2]} ${y2}`;
+    },[dateFrom,dateTo]);
+
+    const drillData=drillSub?dispFilt.filter(c=>c.sub===drillSub||c.source===drillSub):[];
+
+    useEffect(()=>{if(drillSub&&drillRef.current){setTimeout(()=>drillRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),50);}},[drillSub]);
+    useEffect(()=>{if(expBr&&branchRef.current){setTimeout(()=>branchRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),50);}},[expBr]);
+
+    const loadData=useCallback(async(gidsList)=>{
+      setLoading(true);setErr(null);
+      try{
+        const gids=gidsList&&gidsList.length?gidsList:["0"];
+        const results=await Promise.all(gids.map(g=>fetchOneSheet(g)));
+        const merged=results.flat();
+        if(!merged.length)throw new Error("Tidak ada data. Pastikan spreadsheet sudah dibagikan ke 'Anyone with the link'.");
+        const vd=merged.map(d=>d.dateParsed).filter(Boolean).sort((a,b)=>b-a);
+        if(vd.length){const latest=vd[0];setFrom(toISO(new Date(latest.getFullYear(),latest.getMonth(),1)));setTo(toISO(new Date(latest.getFullYear(),latest.getMonth()+1,0)));}
+        setAllData(merged);setLF(new Date());setLoading(false);
+      }catch(e){setErr(e.message);setLoading(false);}
+    },[]);
+
+    useEffect(()=>{
+      if(WEB_APP_URL.includes("MASUKKAN")){loadData(["0"]);return;}
+      fetch(WEB_APP_URL).then(r=>r.json()).then(d=>{
+        if(!Array.isArray(d)||!d.length){loadData(["0"]);return;}
+        const sh=d.filter(s=>{const p=parseSheetName(s.name);if(!p.valid)return false;if(p.year>2025)return true;if(p.year===2025&&p.monthIdx>=11)return true;return false;});
+        const toLoad=sh.length?sh:d;
+        const sheetObjs=toLoad.map(s=>({name:s.name,id:String(s.id)}));
+        sheetsRef.current=sheetObjs;setSheets(sheetObjs);loadData(sheetObjs.map(s=>s.id));
+      }).catch(e=>{console.warn("[FTL] fetch failed:",e.message);loadData(["0"]);});
+    },[loadData]);
+
+    const expDetail=()=>exportXLSX(filtered.map(p=>({Date:p.dateStr,Branch:p.branch,"Nama Customer":p.customer||"",Category:p.cat,"Sub-Issue":p.sub,Status:p.status,Rating:p.rating||"",Source:p.source,"Inti Permasalahan":p.intiPermasalahan})),`FTL_Detail_${new Date().toISOString().split('T')[0]}.xlsx`,"Detail Logs");
+    const expAction=()=>{
+      const wb=XLSX.utils.book_new();
+      const s1=XLSX.utils.json_to_sheet(plans.map((p,i)=>({"#":i+1,"Sub-Issue":p.sub,Volume:p.count,Impact:p.imp,"Strategic Action":p.action,Detail:p.detail,Owner:p.owner,Timeline:tlMap[p.tl]?.label||""})));
+      s1['!cols']=Object.keys(plans[0]||{}).map(()=>({wch:22}));XLSX.utils.book_append_sheet(wb,s1,"Action Plan Summary");
+      const detail=plans.flatMap(p=>dispFilt.filter(f=>f.sub===p.sub).map(d=>({"Sub-Issue":p.sub,Impact:p.imp,"Strategic Action":p.action,Owner:p.owner,Timeline:tlMap[p.tl]?.label||"",Date:d.dateStr,Branch:d.branch,"Nama Customer":d.customer||"",Source:d.source,Status:d.status,Rating:d.rating||"","Inti Permasalahan":d.intiPermasalahan})));
+      if(detail.length){const s2=XLSX.utils.json_to_sheet(detail);s2['!cols']=Object.keys(detail[0]).map(()=>({wch:22}));XLSX.utils.book_append_sheet(wb,s2,"Detail Complaints");}
+      XLSX.writeFile(wb,`FTL_ActionPlan_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+    const expDrill=sub=>{const rows=dispFilt.filter(f=>f.sub===sub).map(d=>({"Sub-Issue":sub,Date:d.dateStr,Branch:d.branch,Source:d.source,Status:d.status,Rating:d.rating||"",Category:d.cat,"Inti Permasalahan":d.intiPermasalahan}));exportXLSX(rows,`FTL_${sub.replace(/[^a-zA-Z0-9]/g,'_')}_${new Date().toISOString().split('T')[0]}.xlsx`,sub.slice(0,31));};
+    const expBrAll=()=>{
+      const wb=XLSX.utils.book_new();
+      const summary=branches.map((b,i)=>({"Rank":i+1,Branch:b.branch,"Total Issues":b.count,"Critical (HIGH)":b.critCt}));
+      const s1=XLSX.utils.json_to_sheet(summary);s1['!cols']=Object.keys(summary[0]).map(()=>({wch:22}));XLSX.utils.book_append_sheet(wb,s1,"Branch Summary");
+      const detail=branches.flatMap(b=>b.issues.map(d=>{const p=plans0.find(pl=>pl.sub===d.sub)||{imp:"LOW",action:"--",owner:"--",tl:"short"};return{Branch:b.branch,Date:d.dateStr,"Nama Customer":d.customer||"","Sub-Issue":d.sub,Impact:p.imp,"Strategic Action":p.action,Owner:p.owner,Timeline:tlMap[p.tl]?.label||"",Source:d.source,Status:d.status,Rating:d.rating||"","Inti Permasalahan":d.intiPermasalahan};}));
+      if(detail.length){const s2=XLSX.utils.json_to_sheet(detail);s2['!cols']=Object.keys(detail[0]).map(()=>({wch:22}));XLSX.utils.book_append_sheet(wb,s2,"Detail Complaints");}
+      XLSX.writeFile(wb,`FTL_AllReport_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
+    const SVG_DL=<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+    const G=({children,style={}})=><div className="glass" style={style}>{children}</div>;
+
+    if(loading)return(<div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}><div style={{width:44,height:44,border:"3px solid rgba(0,0,0,0.10)",borderTopColor:"rgba(0,0,0,0.55)",borderRadius:"50%"}} className="spin"/><p style={{fontSize:14,fontWeight:600,color:"rgba(0,0,0,0.45)"}}>Memuat data...</p></div>);
+    if(err)return(<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}><div className="glass" style={{padding:36,maxWidth:380,textAlign:"center"}}><div style={{marginBottom:16,display:"flex",justifyContent:"center"}}><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(185,50,42,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 style={{fontWeight:700,fontSize:18,color:"rgba(0,0,0,0.82)",marginBottom:8}}>Gagal Memuat</h3><p style={{fontSize:13,color:"rgba(0,0,0,0.45)",marginBottom:24,lineHeight:1.65}}>{err}</p><button onClick={()=>loadData(sheets.map(s=>s.id))} className="pill-btn active-black" style={{margin:"0 auto",gap:6}}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Coba Lagi</button></div></div>);
+
+    return(
+      <div style={{maxWidth:1300,margin:"0 auto",padding:"28px 20px 80px"}}>
+
+        {/* HEADER */}
+        <div className="fu" style={{marginBottom:22}}>
+          <div style={{display:"grid",gridTemplateColumns:"auto 1fr",alignItems:"center",gap:16}}>
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.45)",letterSpacing:"0.10em",textTransform:"uppercase",marginBottom:7,display:"flex",alignItems:"center",gap:8}}>
+                FTL GYM
+                <span style={{background:"rgba(0,0,0,0.06)",borderRadius:20,padding:"2px 10px",fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.50)",textTransform:"none",letterSpacing:"0.02em"}}>{division.label}</span>
+              </div>
+              <h1 style={{fontSize:44,fontWeight:700,color:"rgba(0,0,0,0.86)",letterSpacing:"-0.025em",lineHeight:1.05,marginBottom:6}}>Complaint Analysis</h1>
+              <p style={{fontSize:13,color:"rgba(0,0,0,0.42)",fontWeight:500}}>{smartLabel} | {data.length} laporan di {branchSet.size} cabang</p>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end"}}>
+              <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",justifyContent:"flex-end"}}>
+                {/* FIX 1: MonthDropdown component - Apple-style, no native select overlay */}
+                {monthRanges.length>0&&(
+                  <MonthDropdown monthRanges={monthRanges} smartLabel={smartLabel} isMonthActive={isMonthActive} setFrom={setFrom} setTo={setTo}/>
+                )}
+                <input type="date" value={dateFrom} onChange={e=>setFrom(e.target.value)}/>
+                <span style={{fontSize:12,color:"rgba(0,0,0,0.25)",fontWeight:700}}>-</span>
+                <input type="date" value={dateTo} onChange={e=>setTo(e.target.value)}/>
+                <div className="pill-btn" style={{gap:6}}>
+                  <span style={{width:7,height:7,borderRadius:"50%",background:"#2D8C5A",display:"inline-block",boxShadow:"0 0 6px rgba(45,140,90,0.50)"}}/>
+                  <span style={{fontSize:11,fontWeight:600}}>Live</span>
+                </div>
+                <div className="pill-btn"><span style={{fontSize:11,fontWeight:600}}>{lastFetch?.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</span></div>
+                <button onClick={()=>loadData(sheets.map(s=>s.id))} className="pill-btn" style={{color:"#2E6DB4",fontWeight:700,gap:5}}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh
+                </button>
+                <button onClick={onLogout} className="pill-btn" style={{color:"rgba(0,0,0,0.45)",gap:5}}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Keluar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* STATUS FILTER + ANALYSIS BOX */}
+        <div className="fu" style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:16,paddingBottom:18,borderBottom:"1px solid rgba(0,0,0,0.06)"}}>
+          <span style={{fontSize:10,fontWeight:800,color:"rgba(0,0,0,0.28)",letterSpacing:"0.12em",textTransform:"uppercase",marginRight:4}}>TRACK :</span>
+          {[{v:"Semua Status",a:"active-black"},{v:"Untouched",a:"active-black"},{v:"On going",a:"active-orange"},{v:"Solved",a:"active-green"},{v:"Not Problem to solve",a:"active-red"}].map(({v,a})=>(
+            <button key={v} onClick={()=>{setStFilt(v);setDrill(null);}} className={`pill-btn ${stFilt===v?a:""}`}>{v}</button>
+          ))}
+          <div style={{marginLeft:"auto",flexShrink:0}}>
+            <AIAnalysis divData={divData} division={division} plans={plans} branches={branches} monthRanges={monthRanges}/>
+          </div>
+        </div>
+
+        {/* CATEGORY TABS */}
+        <div className="fu" style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:24}}>
+          <button onClick={()=>{setFilter("Semua");setDrill(null);}} className={`tab-btn ${filter==="Semua"?"active":""}`}>
+            All <span style={{opacity:.4,marginLeft:3,fontSize:10}}>{data.filter(c=>stFilt==="Semua Status"||c.status===stFilt).length}</span>
+          </button>
+          {cats.map(c=>(
+            <button key={c} onClick={()=>{setFilter(c);setDrill(null);}} className={`tab-btn ${filter===c?"active":""}`} style={{whiteSpace:"nowrap"}}>
+              {c} <span style={{opacity:.4,marginLeft:3,fontSize:10}}>{catCts[c]||0}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* KPI CARDS */}
+        <div className="fu" style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:24}}>
+          {[
+            {l:"COMPLAINTS",v:filtered.length,n:filter==="Semua"?division.label:filter,dot:"#2E6DB4"},
+            {l:"GOOGLE REVIEWS",v:gReviews.length,n:`${oneStars.length} dapat bintang 1`,dot:"#B8332A"},
+            {l:"BRANCHES",v:branchSet.size,n:"lokasi terdampak",dot:"#2D8C5A"},
+            {l:"TOP ISSUE",v:subCts[0]?.[0]||"--",n:`${subCts[0]?.[1]||0} laporan`,dot:"#A86428",sm:true},
+            {l:"DAILY RATE",v:(filtered.length/daysCt).toFixed(1),n:`per hari (${daysCt} hari)`,dot:"#7A52A8"},
+          ].map((k,i)=>(
+            <div key={i} className="kpi-card">
+              <div style={{fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.36)",letterSpacing:"0.10em",textTransform:"uppercase",marginBottom:12}}>{k.l}</div>
+              <div style={{fontSize:k.sm?22:36,fontWeight:800,color:"rgba(0,0,0,0.84)",letterSpacing:"-0.02em",lineHeight:1,marginBottom:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{k.v}</div>
+              <div style={{display:"flex",alignItems:"center",gap:7}}>
+                <span style={{width:6,height:6,borderRadius:"50%",background:k.dot,boxShadow:`0 0 7px ${k.dot}80`,flexShrink:0,display:"inline-block"}}/>
+                <span style={{fontSize:11,color:"rgba(0,0,0,0.40)",fontWeight:500}}>{k.n}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CHARTS */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+          <G style={{padding:"22px 26px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <span style={{fontSize:17,fontWeight:800,color:"rgba(0,0,0,0.82)"}}>Sub-Issues</span>
+              <span style={{fontSize:10,fontWeight:600,color:"rgba(0,0,0,0.36)",background:"rgba(0,0,0,0.05)",padding:"4px 10px",borderRadius:20}}>klik untuk drill down</span>
+            </div>
+            {subCts.slice(0,10).map(([name,ct],i)=>(
+              <div key={name} onClick={()=>setDrill(drillSub===name?null:name)} style={{display:"flex",alignItems:"center",gap:12,marginBottom:11,cursor:"pointer",opacity:drillSub&&drillSub!==name?.4:1,transition:"opacity .2s"}}>
+                <span style={{fontSize:12,color:drillSub===name?"rgba(0,0,0,0.80)":"rgba(0,0,0,0.42)",fontWeight:drillSub===name?700:500,width:118,textAlign:"right",flexShrink:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{name}</span>
+                <div className="pb"><div className="pf" style={{width:`${Math.max((ct/maxSub)*100,4)}%`,background:`hsl(${Math.round((i/Math.max(subCts.length-1,1))*30)},68%,${42+Math.round((i/Math.max(subCts.length-1,1))*16)}%)`,boxShadow:"0 1px 6px rgba(0,0,0,0.12)"}}/></div>
+                <span style={{fontSize:13,fontWeight:800,color:"rgba(0,0,0,0.80)",width:22,textAlign:"right",flexShrink:0}}>{ct}</span>
+              </div>
+            ))}
+            {!subCts.length&&<div style={{textAlign:"center",color:"rgba(0,0,0,0.25)",fontSize:13,padding:"20px 0"}}>Tidak ada data</div>}
+          </G>
+          <G style={{padding:"22px 26px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <span style={{fontSize:17,fontWeight:800,color:"rgba(0,0,0,0.82)"}}>Source Distribution</span>
+              <span style={{fontSize:10,fontWeight:600,color:"rgba(0,0,0,0.36)",background:"rgba(0,0,0,0.05)",padding:"4px 10px",borderRadius:20}}>by platform</span>
+            </div>
+            {srcCts.map(([src,ct],i)=>{
+              const srcC={"Quick Response":"#2E6DB4","Google Review":"#B8332A","WhatsApp":"#2D8C5A","Instagram":"#7A52A8","In-Apps":"#A86428","Panggilan":"#8E8E93"}[src]||`hsl(${i*40},55%,45%)`;
+              return(<div key={src} onClick={()=>setDrill(drillSub===src?null:src)} style={{display:"flex",alignItems:"center",gap:12,marginBottom:11,cursor:"pointer",opacity:drillSub&&drillSub!==src?.4:1,transition:"opacity .2s"}}>
+                <span style={{fontSize:12,color:drillSub===src?"rgba(0,0,0,0.80)":"rgba(0,0,0,0.42)",fontWeight:drillSub===src?700:500,width:118,textAlign:"right",flexShrink:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{src}</span>
+                <div className="pb"><div className="pf" style={{width:`${Math.max((ct/maxSrc)*100,4)}%`,background:srcC,boxShadow:"0 1px 6px rgba(0,0,0,0.10)"}}/></div>
+                <span style={{fontSize:13,fontWeight:800,color:"rgba(0,0,0,0.80)",width:22,textAlign:"right",flexShrink:0}}>{ct}</span>
+              </div>);
+            })}
+            {!srcCts.length&&<div style={{textAlign:"center",color:"rgba(0,0,0,0.25)",fontSize:13,padding:"20px 0"}}>Tidak ada data</div>}
+          </G>
+        </div>
+
+        {/* PRIORITY MATRIX */}
+        <G style={{padding:"22px 26px",marginBottom:16}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+            <span style={{fontSize:17,fontWeight:800,color:"rgba(0,0,0,0.82)"}}>Priority Matrix</span>
+            <span style={{fontSize:10,fontWeight:600,color:"rgba(0,0,0,0.36)",background:"rgba(0,0,0,0.05)",padding:"4px 10px",borderRadius:20}}>Dampak x Waktu</span>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            {[{k:"hE",t:"&#128308; Prioritas",bg:"rgba(185,50,42,0.07)",bold:true},{k:"hH",t:"&#128992; Strategic Action",bg:"rgba(175,100,40,0.07)"},{k:"lE",t:"&#128994; Easy & Quick Win",bg:"rgba(45,140,90,0.07)"},{k:"lH",t:"&#9898; Bukan Prioritas",bg:"rgba(142,142,147,0.06)"}].map(q=>(
+              <div key={q.k} className="quad" style={{background:q.bg}}>
+                <div style={{fontSize:11,fontWeight:800,color:"rgba(0,0,0,0.65)",marginBottom:12}} dangerouslySetInnerHTML={{__html:q.t}}/>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {matrix[q.k].length?matrix[q.k].map(p=>(
+                    <div key={p.sub} onClick={()=>setDrill(p.sub)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",fontSize:13,fontWeight:q.bold?700:500,color:"rgba(0,0,0,0.78)",transition:"opacity .15s"}} onMouseEnter={e=>e.currentTarget.style.opacity=.6} onMouseLeave={e=>e.currentTarget.style.opacity=1}>
+                      <span>{p.sub}</span>
+                      <span style={{fontWeight:800,background:"rgba(255,255,255,0.75)",borderRadius:6,padding:"1px 8px",fontSize:12,boxShadow:"0 1px 4px rgba(0,0,0,0.07)"}}>{p.count}</span>
+                    </div>
+                  )):<div style={{fontSize:12,color:"rgba(0,0,0,0.25)"}}>--</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </G>
+
+        {/* DRILL-DOWN */}
+        {drillSub&&(
+          <div ref={drillRef}>
+            <G style={{marginBottom:16,overflow:"hidden",padding:0}}>
+              <div style={{padding:"14px 24px",background:"rgba(255,255,255,0.30)",borderBottom:"1px solid rgba(0,0,0,0.055)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <span style={{fontSize:16,fontWeight:800,color:"rgba(0,0,0,0.80)"}}>Detail Logs: {drillSub}</span>
+                  <span style={{background:"rgba(0,0,0,0.07)",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.55)"}}>{drillData.length} entries</span>
+                </div>
+                <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                  <button onClick={()=>expDrill(drillSub)} className="pill-btn" style={{color:"#2D8C5A",fontSize:11,fontWeight:700,gap:5}}>{SVG_DL} Export Excel</button>
+                  <button onClick={()=>setDrill(null)} style={{width:28,height:28,borderRadius:"50%",background:"rgba(0,0,0,0.08)",border:"1px solid rgba(0,0,0,0.08)",cursor:"pointer",fontSize:12,fontWeight:700,color:"rgba(0,0,0,0.55)"}}>X</button>
+                </div>
+              </div>
+              <div style={{overflowX:"auto",maxHeight:380,overflowY:"auto"}}>
+                <table style={{width:"100%",fontSize:12,borderCollapse:"collapse"}}>
+                  <thead style={{position:"sticky",top:0,background:"rgba(250,249,246,0.95)",backdropFilter:"blur(20px)",zIndex:10}}>
+                    <tr style={{borderBottom:"1px solid rgba(0,0,0,0.06)"}}>
+                      {["Date","Branch","Member","Issue Summary","Owner","Rating","Status"].map(h=>(
+                        <th key={h} style={{padding:"10px 18px",textAlign:"left",fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:"0.08em",whiteSpace:"nowrap"}}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {drillData.map(c=>(
+                      <tr key={c.id} className="trow" style={{borderBottom:"1px solid rgba(0,0,0,0.04)"}}>
+                        <td style={{padding:"11px 18px",color:"rgba(0,0,0,0.42)",fontWeight:500,whiteSpace:"nowrap"}}>{c.dateStr||"--"}</td>
+                        <td style={{padding:"11px 18px"}}><div style={{fontWeight:700,color:"rgba(0,0,0,0.80)"}}>{c.branch}</div><div style={{fontSize:10,color:"rgba(0,0,0,0.30)",textTransform:"uppercase",letterSpacing:"0.05em",marginTop:2}}>{c.source}</div></td>
+                        <td style={{padding:"11px 18px",fontWeight:600,color:"rgba(0,0,0,0.70)"}}>{c.customer||"--"}</td>
+                        <td style={{padding:"11px 18px",color:"rgba(0,0,0,0.55)",fontWeight:500,maxWidth:340,lineHeight:1.5}}>"{c.intiPermasalahan}"</td>
+                        <td style={{padding:"11px 18px",fontWeight:600,color:"rgba(0,0,0,0.55)",whiteSpace:"nowrap"}}>{plans0.find(p=>p.sub===c.sub)?.owner||"--"}</td>
+                        <td style={{padding:"11px 18px",fontWeight:700,color:c.rating?"#A86428":"rgba(0,0,0,0.25)",textAlign:"center"}}>{c.rating?`* ${c.rating}`:"--"}</td>
+                        <td style={{padding:"11px 18px"}}><StatusSelect value={c.status} rowId={c.id} onUpdate={updateStatus} disabled={false}/></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </G>
+          </div>
+        )}
+
+        {/* ACTION PLAN */}
+        <G style={{marginBottom:16,overflow:"hidden",padding:0}}>
+          <div style={{padding:"18px 24px",borderBottom:"1px solid rgba(0,0,0,0.055)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:17,fontWeight:800,color:"rgba(0,0,0,0.82)"}}>Action Plan Directory</span>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <button onClick={expAction} className="pill-btn" style={{color:"#2D8C5A",fontSize:11,fontWeight:700,gap:5}}>{SVG_DL} Export Excel</button>
+              <span style={{fontSize:11,fontWeight:600,color:"rgba(0,0,0,0.40)",background:"rgba(0,0,0,0.05)",padding:"5px 12px",borderRadius:20}}>{plans.length} items</span>
+            </div>
+          </div>
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",fontSize:12,borderCollapse:"collapse",minWidth:820}}>
+              <thead style={{background:"rgba(255,255,255,0.25)"}}>
+                <tr style={{borderBottom:"1px solid rgba(0,0,0,0.055)"}}>
+                  {[{k:null,l:"#"},{k:"sub",l:"Categorization"},{k:"count",l:"Vol"},{k:"iv",l:"Level"},{k:null,l:"Strategic Initiative"},{k:"owner",l:"Owner"},{k:"tl",l:"Timeline"}].map(({k,l})=>(
+                    <th key={l} onClick={k?()=>ts(k):undefined} style={{padding:"12px 18px",textAlign:"left",fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:"0.08em",cursor:k?"pointer":"default",whiteSpace:"nowrap"}}>{l}{k&&<Si col={k}/>}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {plans.map((p,i)=>{
+                  const tl=tlMap[p.tl]||tlMap.short,isExp=expRow===p.sub;
+                  return(
+                    <React.Fragment key={p.sub}>
+                      <tr className="trow" style={{borderBottom:"1px solid rgba(0,0,0,0.038)",cursor:"pointer",background:isExp?"rgba(255,255,255,0.35)":""}} onClick={()=>{setExpRow(isExp?null:p.sub);setExpRL(10);}}>
+                        <td style={{padding:"14px 18px",color:"rgba(0,0,0,0.28)",fontWeight:600,textAlign:"center"}}>{i+1}</td>
+                        <td style={{padding:"14px 18px",fontWeight:700,color:"rgba(0,0,0,0.80)"}}>{p.sub}</td>
+                        <td style={{padding:"14px 18px",textAlign:"center",fontWeight:800,color:"rgba(0,0,0,0.78)"}}>{p.count}</td>
+                        <td style={{padding:"14px 18px",textAlign:"center"}}><ImpBadge imp={p.imp}/></td>
+                        <td style={{padding:"14px 18px",maxWidth:300}}><div style={{fontWeight:700,color:"rgba(0,0,0,0.80)",marginBottom:3}}>{p.action}</div><div style={{fontSize:11,color:"rgba(0,0,0,0.42)",lineHeight:1.5}}>{p.detail}</div></td>
+                        <td style={{padding:"14px 18px",fontWeight:700,color:"rgba(0,0,0,0.55)"}}>{p.owner}</td>
+                        <td style={{padding:"14px 18px",textAlign:"center"}}><span style={{fontWeight:800,fontSize:12,color:tl.clr}}>{tl.label}</span></td>
+                      </tr>
+                      {isExp&&(
+                        <tr style={{background:"rgba(255,255,255,0.20)"}}>
+                          <td colSpan={7} style={{padding:"16px 24px 22px"}}>
+                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,paddingBottom:10,borderBottom:"1px solid rgba(0,0,0,0.06)"}}>
+                              <span style={{fontSize:10,fontWeight:800,color:"rgba(0,0,0,0.32)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Detail Keluhan</span>
+                              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                                <button onClick={()=>expDrill(p.sub)} className="pill-btn" style={{color:"#2D8C5A",fontSize:10,fontWeight:700,gap:4,padding:"4px 10px"}}>{SVG_DL} Export Excel</button>
+                                <select value={expRL} onChange={e=>setExpRL(Number(e.target.value))} style={{fontSize:11,border:"1px solid rgba(0,0,0,0.10)",borderRadius:8,padding:"3px 8px",color:"rgba(0,0,0,0.60)",fontWeight:600,cursor:"pointer",background:"rgba(255,255,255,0.80)"}}>
+                                  {[10,20,50,99999].map(v=><option key={v} value={v}>Show {v===99999?"All":v}</option>)}
+                                </select>
+                              </div>
+                            </div>
+                            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                              {dispFilt.filter(f=>f.sub===p.sub).slice(0,expRL).map((d,idx)=>(
+                                <div key={idx} className="glass-inner" style={{padding:"12px 16px",display:"grid",gridTemplateColumns:"130px 80px 120px 90px 120px 140px 1fr",alignItems:"center",gap:12}}>
+                                  <span style={{fontWeight:700,color:"rgba(0,0,0,0.80)",fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.branch}</span>
+                                  <span style={{fontSize:11,color:"rgba(0,0,0,0.38)",whiteSpace:"nowrap"}}>{d.dateStr||"N/A"}</span>
+                                  <span style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.70)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.customer||"--"}</span>
+                                  <span style={{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",color:"rgba(0,0,0,0.38)",background:"rgba(0,0,0,0.06)",padding:"2px 8px",borderRadius:20,textAlign:"center",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.source||"--"}</span>
+                                  <span style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.55)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.owner||"--"}</span>
+                                  <StatusSelect value={d.status} rowId={d.id} onUpdate={updateStatus} disabled={false}/>
+                                  <span style={{fontSize:12,color:"rgba(0,0,0,0.50)",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>"{d.intiPermasalahan}"</span>
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </G>
+
+        {/* TOP AFFECTED CLUBS */}
+        <G style={{overflow:"hidden",marginBottom:16,padding:0}}>
+          <div style={{padding:"18px 24px",borderBottom:"1px solid rgba(0,0,0,0.055)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:17,fontWeight:800,color:"rgba(0,0,0,0.82)"}}>Top Affected Clubs</span>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <button onClick={expBrAll} className="pill-btn" style={{color:"#2D8C5A",fontSize:11,fontWeight:700,gap:5}}>{SVG_DL} All Report</button>
+              <span style={{fontSize:11,fontWeight:600,color:"rgba(0,0,0,0.40)",background:"rgba(0,0,0,0.05)",padding:"5px 12px",borderRadius:20}}>{branches.length} cabang</span>
+            </div>
+          </div>
+          <div style={{padding:"18px 28px 10px",display:"grid",gridTemplateColumns:"1fr 1fr",columnGap:52}}>
+            {[0,1].map(col=>(
+              <div key={col}>
+                {branches.filter((_,i)=>col===0?i<Math.ceil(branches.length/2):i>=Math.ceil(branches.length/2)).slice(0,12).map((b,i)=>(
+                  <div key={b.branch} style={{display:"flex",alignItems:"center",gap:12,padding:"7px 0",borderBottom:"1px solid rgba(0,0,0,0.04)",cursor:"pointer"}} onClick={()=>setExpBr(expBr===b.branch?null:b.branch)} onMouseEnter={e=>e.currentTarget.style.opacity=.72} onMouseLeave={e=>e.currentTarget.style.opacity=1}>
+                    <span style={{fontSize:12,color:"rgba(0,0,0,0.50)",fontWeight:500,width:108,textAlign:"right",flexShrink:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.branch}</span>
+                    <div className="pb"><div className="pf" style={{width:`${b.pct}%`,background:b.barColor,boxShadow:`0 1px 6px ${b.barColor}40`}}/></div>
+                    <span style={{fontSize:13,fontWeight:800,color:b.barColor,width:22,textAlign:"right",flexShrink:0}}>{b.count}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          {branches.filter(b=>b.branch===expBr).map(bInfo=>(
+            <div key={bInfo.branch} ref={branchRef} style={{margin:"12px 20px 20px",borderRadius:18,background:"rgba(255,255,255,0.45)",backdropFilter:"blur(20px)",border:"1px solid rgba(0,0,0,0.07)",overflow:"hidden"}}>
+              <div style={{padding:"12px 20px",borderBottom:"1px solid rgba(0,0,0,0.06)",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontWeight:800,color:"rgba(0,0,0,0.82)",fontSize:14}}>{bInfo.branch}</span>
+                  {bInfo.critCt>0&&<ImpBadge imp="HIGH"/>}
+                  <span style={{fontSize:12,color:"rgba(0,0,0,0.40)"}}>{bInfo.count} issues | {bInfo.critCt} critical</span>
+                </div>
+                <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                  <select value={brLim} onChange={e=>setBrLim(Number(e.target.value))} style={{fontSize:11,border:"1px solid rgba(0,0,0,0.10)",borderRadius:8,padding:"3px 8px",color:"rgba(0,0,0,0.60)",fontWeight:600,cursor:"pointer",background:"rgba(255,255,255,0.80)"}}>
+                    {[10,20,50,99999].map(v=><option key={v} value={v}>Show {v===99999?"All":v}</option>)}
+                  </select>
+                  <button onClick={()=>{const rows=bInfo.issues.map((d,idx)=>({"#":idx+1,Branch:d.branch,"Sub-Issue":d.sub,Date:d.dateStr,Status:d.status,Rating:d.rating||"",Source:d.source,Summary:d.intiPermasalahan}));exportXLSX(rows,`FTL_${bInfo.branch}_${new Date().toISOString().split('T')[0]}.xlsx`,bInfo.branch.slice(0,31));}} className="pill-btn" style={{fontSize:10,color:"#2D8C5A",fontWeight:700,gap:4}}>{SVG_DL} Excel</button>
+                  <button onClick={()=>{const sy=window.scrollY;setExpBr(null);setTimeout(()=>window.scrollTo({top:sy}),10);}} style={{width:26,height:26,borderRadius:"50%",background:"rgba(0,0,0,0.07)",border:"none",cursor:"pointer",fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.50)"}}>X</button>
+                </div>
+              </div>
+              <div style={{padding:"14px 20px"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.30)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Keluhan - Urut dari paling urgent</div>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {bInfo.issues.slice(0,brLim).map((d,idx)=>{
+                    const imp=plans0.find(p=>p.sub===d.sub)?.imp||'LOW';
+                    return(<div key={idx} className="glass-inner" style={{padding:"12px 16px",display:"grid",gridTemplateColumns:"80px 140px 80px 120px 120px 140px 1fr",alignItems:"center",gap:12}}>
+                      <ImpBadge imp={imp}/>
+                      <span style={{fontWeight:700,color:"rgba(0,0,0,0.80)",fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.sub}</span>
+                      <span style={{fontSize:11,color:"rgba(0,0,0,0.38)",whiteSpace:"nowrap"}}>{d.dateStr||"N/A"}</span>
+                      <span style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.70)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.customer||"--"}</span>
+                      <span style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.55)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{plans0.find(pl=>pl.sub===d.sub)?.owner||"--"}</span>
+                      <StatusSelect value={d.status} rowId={d.id} onUpdate={updateStatus} disabled={false}/>
+                      <span style={{fontSize:12,color:"rgba(0,0,0,0.50)",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>"{d.intiPermasalahan}"</span>
+                    </div>);
+                  })}
+                </div>
+              </div>
+            </div>
+          ))}
+        </G>
+
+        {/* STATUS TOAST */}
+        {statusToast&&(
+          <div style={{position:"fixed",bottom:28,right:28,zIndex:9999,background:statusToast.state==="saving"?"rgba(28,28,30,0.88)":statusToast.state==="saved"?"rgba(45,140,90,0.90)":"rgba(185,50,42,0.90)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderTop:"1px solid rgba(255,255,255,0.25)",borderLeft:"1px solid rgba(255,255,255,0.20)",borderRight:"1px solid rgba(255,255,255,0.15)",borderBottom:"1px solid rgba(255,255,255,0.10)",borderRadius:16,padding:"12px 20px",boxShadow:"0 8px 32px rgba(0,0,0,0.20),inset 0 0.5px 0 rgba(255,255,255,0.30)",display:"flex",alignItems:"center",gap:10,animation:"fu 0.25s ease both",minWidth:200}}>
+            {statusToast.state==="saving"&&(<><div style={{width:14,height:14,border:"2px solid rgba(255,255,255,0.35)",borderTopColor:"#fff",borderRadius:"50%"}} className="spin"/><span style={{fontSize:13,fontWeight:600,color:"#fff"}}>Menyimpan...</span></>)}
+            {statusToast.state==="saved"&&(<><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span style={{fontSize:13,fontWeight:600,color:"#fff"}}>Status tersimpan</span></>)}
+            {statusToast.state==="error"&&(<><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span style={{fontSize:13,fontWeight:600,color:"#fff"}}>Gagal menyimpan</span></>)}
+          </div>
+        )}
+
+        {/* EXPORT FOOTER */}
+        <G style={{padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+          <div>
+            <div style={{fontSize:15,fontWeight:800,color:"rgba(0,0,0,0.80)",marginBottom:3}}>Export Data</div>
+            <div style={{fontSize:12,color:"rgba(0,0,0,0.38)"}}>Download semua data dalam format Excel (.xlsx)</div>
+          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <button onClick={expDetail} className="pill-btn" style={{color:"#2E6DB4",fontWeight:700,gap:6}}>{SVG_DL} Detail Logs</button>
+            <button onClick={expAction} className="pill-btn" style={{color:"#7A52A8",fontWeight:700,gap:6}}>{SVG_DL} Action Plan</button>
+            <button onClick={expBrAll}  className="pill-btn" style={{color:"#2D8C5A",fontWeight:700,gap:6}}>{SVG_DL} All Report</button>
+          </div>
+        </G>
+
+      </div>
+    );
+  }
+
+  // ROOT
+  function App(){
+    const [session,setSession]=useState(()=>{
+      try{const s=JSON.parse(sessionStorage.getItem("ftl_session")||"null");if(!s)return null;if(Date.now()-s.loginTime>SESSION_DURATION)return null;return s;}catch{return null;}
+    });
+    function handleLogin(division){const s={divKey:division.key,loginTime:Date.now()};sessionStorage.setItem("ftl_session",JSON.stringify(s));setSession(s);}
+    function handleLogout(){sessionStorage.removeItem("ftl_session");setSession(null);}
+    useEffect(()=>{if(!session)return;const remaining=SESSION_DURATION-(Date.now()-session.loginTime);if(remaining<=0){handleLogout();return;}const t=setTimeout(handleLogout,remaining);return()=>clearTimeout(t);},[session]);
+    if(!session)return<LoginScreen onLogin={handleLogin}/>;
+    const division=DIVISIONS.find(d=>d.key===session.divKey)||DIVISIONS[DIVISIONS.length-1];
+    return<Dashboard division={division} onLogout={handleLogout}/>;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
