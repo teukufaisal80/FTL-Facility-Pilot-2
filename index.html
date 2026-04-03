@@ -480,6 +480,19 @@ BALAS HANYA JSON valid, tidak ada teks lain:
 {"summary":"ringkasan 1-2 kalimat spesifik","items":[{"action":"langkah konkret maks 70 karakter","detail":"penjelasan maks 120 karakter","days":7}]}
 Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
 
+    // Test key validity and list available models (runs once)
+    useEffect(()=>{
+      if(!GEMINI_KEY || GEMINI_KEY.length < 10) return;
+      fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_KEY}`)
+        .then(r=>r.json())
+        .then(d=>{
+          if(d.error){ console.error("[FTL KEY TEST] Error:", d.error.message); return; }
+          const models = (d.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name);
+          console.log("[FTL KEY TEST] Available generateContent models:", models);
+        })
+        .catch(e=>console.error("[FTL KEY TEST] Fetch failed:", e.message));
+    },[]);
+
     async function analyze(type,customText){
       console.log("[FTL AI] analyze() called, type:", type);
       setOpen(false);setCM(false);setLoading(true);setError(null);setModal(null);setActive(type);
