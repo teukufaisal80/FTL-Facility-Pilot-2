@@ -76,7 +76,7 @@
   const _EK = [39,61,22,6,42,20,113,113,4,84,49,70,63,14,46,43,72,67,100,119,51,14,43,19,78,47,97,7,121,117,23,25,41,63,16,85,98,117,119];
   const _EP = "ftlgym2026";
   function getKey(){ return _EK.map((b,i)=>String.fromCharCode(b^_EP.charCodeAt(i%_EP.length))).join(""); }
-  const GEMINI_MODELS = ["gemini-2.0-flash","gemini-1.5-flash","gemini-2.0-flash-exp","gemini-1.0-pro"];
+  const GEMINI_MODELS = ["gemini-1.5-flash","gemini-1.5-pro","gemini-2.0-flash-lite","gemini-1.0-pro"];
   function geminiURL(model){ return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${getKey()}`; }
   const SESSION_DURATION = 15 * 60 * 1000;
 
@@ -512,7 +512,7 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
           res = await fetch(geminiURL(model),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompts[type]}]}],generationConfig:{maxOutputTokens:1500,temperature:0.6}})});
           data = await res.json();
           console.log("[FTL AI] Model:", model, "Status:", res.status);
-          if(res.status !== 404) break; // found a working model
+          if(res.status !== 404 && res.status !== 429) break; // skip unavailable/rate-limited models
         }
         console.log("[FTL AI] Final response:", JSON.stringify(data).slice(0,300));
         if(!res.ok || data.error){
