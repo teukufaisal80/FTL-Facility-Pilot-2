@@ -72,7 +72,7 @@
 
   const SHEET_ID = "1HqgoFdEwppoBfcPj2HeXPJuo-WH-Ef4sik1J0OYoORg";
   const GEMINI_KEY = "AIzaSyAAqlD9paJPIRlFhnbN_L3aIc0B1X9yyOk"; // <-- ganti setelah revoke key lama
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxoJYrWA2tr1oVe-G-UVlnKZ36xMroIFKXW2-KrG_Y1WEl9rofq2NdCVtHtfwo2XtE/exec";
   const SESSION_DURATION = 15 * 60 * 1000;
 
@@ -311,6 +311,39 @@
     doc.save(`FTL_AI_${modal.title.replace(/[^a-zA-Z0-9]/g,'_')}_${todayStr.replace(/ /g,'_')}.pdf`);
   }
 
+  // Auto-fade error toast
+  function ErrorToast({msg, onClose}){
+    const [visible, setVisible] = useState(true);
+    useEffect(()=>{
+      const t1 = setTimeout(()=>setVisible(false), 3500); // start fade
+      const t2 = setTimeout(()=>onClose(), 4200);          // remove
+      return()=>{clearTimeout(t1);clearTimeout(t2);};
+    },[]);
+    return ReactDOM.createPortal(
+      <div style={{
+        position:"fixed",bottom:28,right:28,zIndex:2147483647,
+        padding:"13px 18px",borderRadius:14,
+        background:"rgba(185,50,42,0.93)",
+        backdropFilter:"blur(20px)",
+        color:"#fff",fontSize:13,fontWeight:600,
+        boxShadow:"0 8px 32px rgba(185,50,42,0.35)",
+        display:"flex",alignItems:"center",gap:10,maxWidth:340,
+        transition:"opacity 0.7s ease",
+        opacity:visible?1:0,
+        pointerEvents:visible?"auto":"none"
+      }}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span style={{flex:1}}>{msg}</span>
+        <button onClick={onClose} style={{background:"rgba(255,255,255,0.18)",border:"none",color:"#fff",cursor:"pointer",borderRadius:6,padding:"4px 6px",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>,
+      document.body
+    );
+  }
+
   // ════ FIX 1: MonthDropdown — Apple-style custom React dropdown (no native select overlay) ════
   function MonthDropdown({monthRanges,smartLabel,isMonthActive,setFrom,setTo}){
     const [mOpen,setMOpen]=useState(false);
@@ -476,8 +509,21 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
         const parsed=JSON.parse(jm[0]);
         setModal({title:titles[type],summary:parsed.summary,items:parsed.items||[]});
       }catch(e){
-        const msg = e.message || "Unknown error";
-        console.error("[FTL AI Error]", msg);
+        const raw = e.message || "";
+        console.error("[FTL AI Error]", raw);
+        // Parse retry time if available
+        const retryMatch = raw.match(/retry in ([\d.]+)s/i) || raw.match(/Please retry in ([\d.]+)/i);
+        const retrySec = retryMatch ? Math.ceil(parseFloat(retryMatch[1])) : null;
+        let msg = "Gagal menghubungi AI.";
+        if(raw.toLowerCase().includes("quota") || raw.toLowerCase().includes("resource_exhausted") || raw.includes("429") || raw.includes("limit: 0")){
+          msg = retrySec ? `Quota limit — tunggu sekitar ${retrySec} detik.` : "Quota limit — tunggu sekitar 60 detik.";
+        } else if(raw.includes("401") || raw.toLowerCase().includes("api key") || raw.toLowerCase().includes("invalid")){
+          msg = "API Key tidak valid.";
+        } else if(raw.includes("403")){
+          msg = "Akses ditolak — cek restriction API key.";
+        } else if(raw.toLowerCase().includes("fetch") || raw.toLowerCase().includes("network")){
+          msg = "Gagal konek — cek koneksi internet.";
+        }
         setError(msg);
       }
       setLoading(false);
@@ -614,15 +660,7 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
           </div>
         )}
 
-        {error&&(
-          <div style={{position:"fixed",bottom:28,right:28,zIndex:2147483647,padding:"14px 20px",borderRadius:14,background:"rgba(185,50,42,0.95)",backdropFilter:"blur(20px)",color:"#fff",fontSize:13,fontWeight:600,boxShadow:"0 8px 32px rgba(185,50,42,0.40)",animation:"fu 0.2s ease both",display:"flex",alignItems:"center",gap:10,maxWidth:380}}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span style={{flex:1}}>{error}</span>
-            <button onClick={()=>setError(null)} style={{background:"rgba(255,255,255,0.20)",border:"none",color:"#fff",cursor:"pointer",borderRadius:6,padding:"5px 7px",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-          </div>
-        )}
+        {error&&<ErrorToast msg={error} onClose={()=>setError(null)}/>}
       </>
     );
   }
