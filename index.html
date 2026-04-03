@@ -72,7 +72,14 @@
 
   const SHEET_ID = "1HqgoFdEwppoBfcPj2HeXPJuo-WH-Ef4sik1J0OYoORg";
   const GEMINI_KEY = "AIzaSyDu6EBGb_wjpzmyKW0BJK_by6P_Irs59Vg"; // <-- ganti setelah revoke key lama
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+  // Try models in order until one works
+  const GEMINI_MODELS = [
+    "gemini-2.0-flash-exp",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-001",
+    "gemini-pro",
+  ];
+  function geminiURL(model){ return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`; }
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxoJYrWA2tr1oVe-G-UVlnKZ36xMroIFKXW2-KrG_Y1WEl9rofq2NdCVtHtfwo2XtE/exec";
   const SESSION_DURATION = 15 * 60 * 1000;
 
@@ -488,12 +495,16 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
           focus:`Data keluhan FTL Gym (seluruh data sheet):\n${ctx}\n\nBerikan rekomendasi fokus dari 3 aspek: (1) sub-issue paling sering & berdampak, (2) outlet yang butuh intervensi segera, (3) pola status keluhan. Gabungkan jadi action terintegrasi, urutkan paling mendesak.${SUFFIX}`,
           custom:`Data keluhan FTL Gym:\n${ctx}\n\nPertanyaan: ${customText}\n\nJawab dengan action items konkret.${SUFFIX}`
         };
-        console.log("[FTL AI] Sending request to Gemini...");
-        console.log("[FTL AI] URL:", GEMINI_URL);
-        const res=await fetch(GEMINI_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompts[type]}]}],generationConfig:{maxOutputTokens:1500,temperature:0.6}})});
-        const data=await res.json();
-        console.log("[FTL AI] Response status:", res.status);
-        console.log("[FTL AI] Response data:", JSON.stringify(data).slice(0,500));
+        console.log("[FTL AI] Trying models...");
+        let res, data;
+        for(const model of GEMINI_MODELS){
+          console.log("[FTL AI] Trying model:", model);
+          res = await fetch(geminiURL(model),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompts[type]}]}],generationConfig:{maxOutputTokens:1500,temperature:0.6}})});
+          data = await res.json();
+          console.log("[FTL AI] Model:", model, "Status:", res.status);
+          if(res.status !== 404) break; // found a working model
+        }
+        console.log("[FTL AI] Final response:", JSON.stringify(data).slice(0,300));
         if(!res.ok || data.error){
           const errMsg = data.error?.message || data.error?.status || `HTTP ${res.status}`;
           const errCode = data.error?.code || res.status;
