@@ -76,7 +76,7 @@
   const _EK = [39,61,22,6,42,20,113,113,4,84,49,70,63,14,46,43,72,67,100,119,51,14,43,19,78,47,97,7,121,117,23,25,41,63,16,85,98,117,119];
   const _EP = "ftlgym2026";
   function getKey(){ return _EK.map((b,i)=>String.fromCharCode(b^_EP.charCodeAt(i%_EP.length))).join(""); }
-  const GEMINI_MODELS = ["gemini-1.5-flash","gemini-1.5-pro","gemini-2.0-flash-lite","gemini-1.0-pro"];
+  const GEMINI_MODELS = ["gemini-2.5-flash","gemini-2.0-flash","gemini-2.0-flash-lite","gemini-2.5-pro"];
   function geminiURL(model){ return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${getKey()}`; }
   const SESSION_DURATION = 15 * 60 * 1000;
 
