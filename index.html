@@ -72,7 +72,7 @@
 
   const SHEET_ID = "1HqgoFdEwppoBfcPj2HeXPJuo-WH-Ef4sik1J0OYoORg";
   const GEMINI_KEY = "AIzaSyCEjU3SuMpxHbGiK6i4eusLUivoIURzDto";
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxoJYrWA2tr1oVe-G-UVlnKZ36xMroIFKXW2-KrG_Y1WEl9rofq2NdCVtHtfwo2XtE/exec";
   const SESSION_DURATION = 15 * 60 * 1000;
 
@@ -393,9 +393,14 @@
     const [active,setActive]=useState(null);
     const [aiPos,setAIPos]=useState({top:0,right:0});
     const boxRef=useRef(null);
+    const dropPortalRef=useRef(null);
 
     useEffect(()=>{
-      const handler=e=>{if(boxRef.current&&!boxRef.current.contains(e.target))setOpen(false);};
+      const handler=e=>{
+        const inBox=boxRef.current&&boxRef.current.contains(e.target);
+        const inDrop=dropPortalRef.current&&dropPortalRef.current.contains(e.target);
+        if(!inBox&&!inDrop) setOpen(false);
+      };
       document.addEventListener("mousedown",handler);
       return()=>document.removeEventListener("mousedown",handler);
     },[]);
@@ -416,9 +421,12 @@
     const SUFFIX=`\n\nKonteks: Konsultan operasional jaringan gym FTL. Gunakan terminologi: member, cabang/outlet, FC, PT, GX, MC, OB, staff, loker, alat gym, treadmill, dumbbell, kebersihan, fasilitas, parkir, membership, kelas, Google Review, Quick Response, Wh\u0041tsApp.\n\nBALAS HANYA JSON valid, tidak ada teks lain:\n{"summary":"ringkasan 1-2 kalimat spesifik","items":[{"action":"langkah konkret maks 70 karakter","detail":"penjelasan maks 120 karakter","days":3}]}\nBuat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
 
     async function analyze(type,customText){
+      console.log("[FTL AI] analyze() called, type:", type);
       setOpen(false);setCM(false);setLoading(true);setError(null);setModal(null);setActive(type);
       try{
+        console.log("[FTL AI] building context...");
         const{ctx,labels}=buildContext();
+        console.log("[FTL AI] context built, ctx length:", ctx.length);
         const titles={freq:"Isu Paling Sering Muncul",impact:"Isu Paling Berdampak",outlet:"Outlet Terbanyak Komplain",focus:"Rekomendasi Fokus Bulan Ini",custom:customText||"Analisa Custom"};
         const prompts={
           freq:`Data keluhan FTL Gym:\n${ctx}\n\nAnalisa sub-issue paling sering muncul, berikan action items konkret.${SUFFIX}`,
@@ -427,15 +435,38 @@
           focus:`Data keluhan FTL Gym:\n${ctx}\n\nRekomendasi fokus bulan ini dari 3 aspek: (1) sub-issue paling sering & berdampak, (2) outlet butuh intervensi, (3) pola status keluhan. Gabungkan jadi action terintegrasi, urutkan paling mendesak.${SUFFIX}`,
           custom:`Data keluhan FTL Gym:\n${ctx}\n\nPertanyaan: ${customText}\n\nJawab dengan action items konkret.${SUFFIX}`
         };
+        console.log("[FTL AI] Sending request to Gemini...");
+        console.log("[FTL AI] URL:", GEMINI_URL);
         const res=await fetch(GEMINI_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompts[type]}]}],generationConfig:{maxOutputTokens:1500,temperature:0.6}})});
         const data=await res.json();
-        if(data.error)throw new Error(data.error.message);
+        console.log("[FTL AI] Response status:", res.status);
+        console.log("[FTL AI] Response data:", JSON.stringify(data).slice(0,500));
+        if(!res.ok || data.error){
+          const errMsg = data.error?.message || data.error?.status || `HTTP ${res.status}`;
+          const errCode = data.error?.code || res.status;
+          console.error("[FTL AI] API Error:", errCode, errMsg);
+          // Error codes from Google Cloud Console API keys
+          if(errCode===400||errMsg.includes("API_KEY_INVALID")) throw new Error("API Key tidak valid. Pastikan Generative Language API sudah di-enable di Google Cloud Console.");
+          if(errCode===403||errMsg.includes("forbidden")||errMsg.includes("API key not valid")) throw new Error("API Key tidak punya akses. Cek: (1) Enable 'Generative Language API' di Cloud Console, (2) Pastikan tidak ada referrer restriction.");
+          if(errCode===429||errMsg.includes("quota")||errMsg.includes("RESOURCE_EXHAUSTED")) throw new Error("Quota API habis. Cek quota di Google Cloud Console.");
+          throw new Error(`Gemini API error (${errCode}): ${errMsg}`);
+        }
         const text=data.candidates?.[0]?.content?.parts?.[0]?.text||"";
+        console.log("[FTL AI] Got text response, length:", text.length);
+        if(!text) throw new Error("Gemini tidak memberikan respons. Coba lagi.");
         const jm=text.match(/\{[\s\S]*\}/);
-        if(!jm)throw new Error("Format respons tidak valid, coba lagi.");
+        if(!jm)throw new Error("Format respons tidak valid. Raw: "+text.slice(0,100));
         const parsed=JSON.parse(jm[0]);
         setModal({title:titles[type],summary:parsed.summary,items:parsed.items||[]});
-      }catch(e){setError(e.message);}
+      }catch(e){
+        let msg = e.message || "Unknown error";
+        // Tampilkan lebih detail untuk debugging
+        if(msg.includes("API_KEY") || msg.includes("key")) msg = "API Key tidak valid atau belum diaktifkan. Cek Google AI Studio.";
+        else if(msg.includes("quota") || msg.includes("QUOTA")) msg = "Quota API habis. Cek Google AI Studio.";
+        else if(msg.includes("fetch") || msg.includes("network") || msg.includes("Failed")) msg = "Gagal konek ke Gemini API. Cek koneksi internet.";
+        setError(msg);
+        console.error("[FTL AI Error]", e);
+      }
       setLoading(false);
     }
 
@@ -481,7 +512,7 @@
           </button>
           {/* Portal: render dropdown langsung di body, bebas dari semua stacking context */}
           {open&&ReactDOM.createPortal(
-            <div style={{position:"absolute",top:aiPos.top,right:aiPos.right,minWidth:250,zIndex:2147483647,
+            <div ref={dropPortalRef} style={{position:"absolute",top:aiPos.top,right:aiPos.right,minWidth:250,zIndex:2147483647,
               background:"rgba(255,255,255,0.98)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",
               border:"1px solid rgba(0,0,0,0.10)",
               borderRadius:16,boxShadow:"0 4px 6px rgba(0,0,0,0.05),0 10px 40px rgba(0,0,0,0.15),0 2px 8px rgba(0,0,0,0.08)",
@@ -565,11 +596,11 @@
           </div>
         )}
 
-        {error&&!loading&&(
-          <div style={{position:"fixed",bottom:28,right:28,zIndex:9999,padding:"12px 20px",borderRadius:14,background:"rgba(185,50,42,0.90)",backdropFilter:"blur(20px)",color:"#fff",fontSize:13,fontWeight:600,boxShadow:"0 8px 24px rgba(185,50,42,0.30)",animation:"fu 0.2s ease both",display:"flex",alignItems:"center",gap:8}}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            {error}
-            <button onClick={()=>setError(null)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.7)",cursor:"pointer",fontSize:14,marginLeft:4}}>X</button>
+        {error&&(
+          <div style={{position:"fixed",bottom:28,right:28,zIndex:2147483647,padding:"14px 20px",borderRadius:14,background:"rgba(185,50,42,0.95)",backdropFilter:"blur(20px)",color:"#fff",fontSize:13,fontWeight:600,boxShadow:"0 8px 32px rgba(185,50,42,0.40)",animation:"fu 0.2s ease both",display:"flex",alignItems:"center",gap:10,maxWidth:380}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span style={{flex:1}}>{error}</span>
+            <button onClick={()=>setError(null)} style={{background:"rgba(255,255,255,0.20)",border:"none",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:700,borderRadius:6,padding:"2px 8px",flexShrink:0}}>Tutup</button>
           </div>
         )}
       </>
