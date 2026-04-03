@@ -63,26 +63,83 @@
     .division-btn:hover{background:rgba(255,255,255,0.92);transform:translateY(-1px);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.98),0 6px 16px rgba(0,0,0,0.08);}
     .division-btn.selected{background:rgba(28,28,30,0.88);color:#fff;border-color:rgba(28,28,30,0.5);}
     .box-btn{border-radius:16px !important;padding:10px 20px !important;font-size:13px !important;}
-    /* Tooltip for truncated text */
+    /* Tooltip - handled by JS, appended to body */
     .tip{position:relative;cursor:default;}
-    .tip:hover .tip-box{opacity:1;transform:translateY(0);pointer-events:none;}
-    .tip-box{
-      position:absolute;bottom:calc(100% + 8px);left:0;
-      background:rgba(28,28,30,0.94);
-      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-      color:#fff;font-size:12px;font-weight:500;line-height:1.6;font-style:normal;
-      padding:10px 14px;border-radius:12px;
-      box-shadow:0 4px 24px rgba(0,0,0,0.28);
-      min-width:200px;max-width:340px;width:max-content;
-      opacity:0;transform:translateY(6px);
-      transition:opacity 0.18s ease,transform 0.18s ease;
-      pointer-events:none;z-index:99999;
+    #ftl-tooltip{
+      position:fixed;
+      background:rgba(255,255,255,0.22);
+      backdrop-filter:blur(40px) saturate(200%) brightness(1.08);
+      -webkit-backdrop-filter:blur(40px) saturate(200%) brightness(1.08);
+      border:1px solid rgba(255,255,255,0.55);
+      border-top:1.5px solid rgba(255,255,255,0.80);
+      color:rgba(0,0,0,0.85);font-size:12.5px;font-weight:500;line-height:1.65;font-style:normal;
+      padding:11px 15px;border-radius:14px;
+      box-shadow:0 8px 32px rgba(0,0,0,0.13),0 2px 8px rgba(0,0,0,0.08),inset 0 0.5px 0 rgba(255,255,255,0.95);
+      max-width:360px;pointer-events:none;
+      transition:opacity 0.14s ease;
+      z-index:2147483647;
       white-space:normal;word-break:break-word;
+      display:none;
     }
   </style>
 </head>
 <body>
 <div id="root"></div>
+<script>
+// Global tooltip - appended to body, always on top
+var ftlTip = document.createElement('div');
+ftlTip.id = 'ftl-tooltip';
+document.body.appendChild(ftlTip);
+
+var tipTimeout;
+document.addEventListener('mouseover', function(e) {
+  var el = e.target.closest('.tip');
+  if(!el) return;
+  // Only show if content is actually truncated
+  var textEl = el.querySelector('.tip-text') || el;
+  var isOverflowing = el.scrollWidth > el.clientWidth || el.offsetWidth < el.scrollWidth;
+  var tipContent = el.getAttribute('data-tip');
+  if(!tipContent || !isOverflowing) return;
+  
+  clearTimeout(tipTimeout);
+  ftlTip.textContent = tipContent;
+  ftlTip.style.display = 'block';
+  ftlTip.style.opacity = '0';
+  
+  // Position above cursor
+  var tipW = Math.min(ftlTip.offsetWidth, 360);
+  var tipH = ftlTip.offsetHeight;
+  var x = e.clientX - tipW/2;
+  var y = e.clientY - tipH - 14;
+  if(x < 8) x = 8;
+  if(x + tipW > window.innerWidth - 8) x = window.innerWidth - tipW - 8;
+  if(y < 8) y = e.clientY + 18;
+  ftlTip.style.left = x + 'px';
+  ftlTip.style.top = y + 'px';
+  ftlTip.style.opacity = '1';
+});
+
+document.addEventListener('mousemove', function(e) {
+  if(ftlTip.style.display === 'none') return;
+  var el = e.target.closest('.tip');
+  if(!el) { ftlTip.style.display = 'none'; return; }
+  var tipW = Math.min(ftlTip.offsetWidth, 360);
+  var tipH = ftlTip.offsetHeight;
+  var x = e.clientX - tipW/2;
+  var y = e.clientY - tipH - 14;
+  if(x < 8) x = 8;
+  if(x + tipW > window.innerWidth - 8) x = window.innerWidth - tipW - 8;
+  if(y < 8) y = e.clientY + 18;
+  ftlTip.style.left = x + 'px';
+  ftlTip.style.top = y + 'px';
+});
+
+document.addEventListener('mouseout', function(e) {
+  var el = e.target.closest('.tip');
+  if(!el) return;
+  tipTimeout = setTimeout(function(){ ftlTip.style.display = 'none'; }, 50);
+});
+</script>
 <script type="text/babel">
   const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
@@ -161,9 +218,30 @@
     if(s.includes("gx"))return"GX"; if(s.includes("pilates"))return"Pilates"; return"Operations";
   }
 
-  const recoDB={"Water & Plumbing":{action:"Audit Suplai & Tekanan Air",detail:"Periksa kinerja pemanas air, tekanan pipa, dan higienitas dispenser air.",tl:"immediate",imp:"HIGH"},"Fasilitas Lainnya":{action:"Tinjauan Perawatan Fasilitas",detail:"Eskalasi perbaikan operasional gedung ke vendor sesuai durasi SLA.",tl:"medium",imp:"LOW"},"Request Lainnya":{action:"Konsolidasi Keluhan Member",detail:"Lacak pengajuan fitur maupun alat baru untuk perencanaan anggaran CapEx.",tl:"long",imp:"LOW"},"Steam & Sauna":{action:"Preventif Komponen Pemanas",detail:"Ganti elemen pemanas yang sudah termakan usia secara proaktif.",tl:"immediate",imp:"MEDIUM"},"AC & Suhu":{action:"Optimalisasi Sistem HVAC",detail:"Bersihkan filter dan kalibrasi sistem pendingin.",tl:"short",imp:"HIGH"},"Pungli / Biaya":{action:"Kebijakan Anti-Pungli",detail:"Pasang peringatan dilarang pungli dan tingkatkan pengawasan parkir.",tl:"immediate",imp:"HIGH"},"Amenities":{action:"Checklist Kelengkapan Rutin",detail:"Staf shift cek ketersediaan tisu, sabun, dan handuk setiap jam.",tl:"immediate",imp:"MEDIUM"},"Akses Parkir":{action:"Manajemen Kapasitas Parkir",detail:"Panduan kantong parkir alternatif saat peak hours.",tl:"short",imp:"MEDIUM"},"Alat Rusak":{action:"Percepatan SLA Perbaikan",detail:"SLA maksimal 24-48 jam untuk kerusakan alat.",tl:"immediate",imp:"HIGH"},"Equipment Issue":{action:"Audit Kelayakan Fleets",detail:"Barikade area berbahaya dan inisiasi penyegaran unit.",tl:"medium",imp:"MEDIUM"},"Staff & Karyawan":{action:"Pelatihan Ulang Hospitality",detail:"Teguran disipliner dan retraining etika ke resepsionis.",tl:"immediate",imp:"HIGH"},"Membership":{action:"Edukasi Kebijakan Tarik",detail:"Flyer pemahaman penagihan dan tata tertib pembebasan masa cuti.",tl:"short",imp:"LOW"},"Kelas & Jadwal":{action:"Evaluasi Jadwal & Kuota",detail:"Pantau penumpukan kelas dan perbesar kuota jam terlaris.",tl:"medium",imp:"LOW"},"Sub-Issue Lainnya":{action:"Investigasi Lapangan Lanjut",detail:"Deteksi kesenjangan operasional lokal yang gagal tercatat.",tl:"short",imp:"LOW"}};
+  const recoDB={
+    "Pungli / Biaya":    {action:"Tegur & Hentikan Pungli Parkir",         detail:"Konfrontasi pelaku, pasang CCTV & papan larangan pungli.",           tl:"immediate",imp:"HIGH"},
+    "Alat Rusak":        {action:"Perbaikan Darurat Alat Gym",              detail:"Barikade alat rusak, hubungi teknisi dalam 24 jam.",                 tl:"immediate",imp:"HIGH"},
+    "Staff & Karyawan":  {action:"Teguran & Coaching Langsung",             detail:"Teguran lisan/tertulis hari ini, sesi coaching etika pelayanan.",     tl:"immediate",imp:"HIGH"},
+    "Water & Plumbing":  {action:"Perbaikan Instalasi Air",                 detail:"Cek tekanan pipa, heater, dan kebocoran — eskalasi ke teknisi.",      tl:"immediate",imp:"HIGH"},
+    "Steam & Sauna":     {action:"Servis Darurat Steam & Sauna",            detail:"Matikan unit, panggil teknisi, estimasi downtime ke member.",          tl:"immediate",imp:"MEDIUM"},
+    "AC & Suhu":         {action:"Servis & Kalibrasi AC",                   detail:"Jadwalkan servis AC dalam minggu ini, cek filter & freon.",           tl:"short",imp:"HIGH"},
+    "Amenities":         {action:"Restok & SOP Pengecekan Amenities",       detail:"Restok stok habis, buat jadwal cek amenities per shift.",             tl:"short",imp:"MEDIUM"},
+    "Akses Parkir":      {action:"Koordinasi Manajemen Parkir",             detail:"Negosiasi kapasitas, buat sistem antrian atau alternatif parkir.",    tl:"short",imp:"MEDIUM"},
+    "Equipment Issue":   {action:"Audit & Pengajuan Penggantian Alat",      detail:"Inventarisasi kondisi alat, ajukan pengadaan ke manajemen.",         tl:"medium",imp:"MEDIUM"},
+    "Membership":        {action:"Review & Komunikasi Kebijakan Membership", detail:"Klarifikasi ke member terdampak, update FAQ internal.",              tl:"medium",imp:"LOW"},
+    "Kelas & Jadwal":    {action:"Evaluasi & Penyesuaian Jadwal Kelas",     detail:"Analisa utilisasi kelas, tambah slot atau instruktur bila perlu.",   tl:"medium",imp:"LOW"},
+    "Fasilitas Lainnya": {action:"Perbaikan & Perawatan Fasilitas",         detail:"Koordinasi vendor, jadwalkan perbaikan tanpa ganggu operasional.",   tl:"medium",imp:"LOW"},
+    "Request Lainnya":   {action:"Evaluasi & Tindak Lanjut Request Member", detail:"Kumpulkan request, presentasikan ke manajemen untuk pertimbangan.", tl:"long",imp:"LOW"},
+    "Sub-Issue Lainnya": {action:"Investigasi & Root Cause Analysis",       detail:"Investigasi mendalam, identifikasi pola dan penyebab utama.",        tl:"long",imp:"LOW"},
+  }
 
-  const tlMap={immediate:{label:"0-1 bln",clr:"#B8332A"},short:{label:"0-1 bln",clr:"#B8332A"},medium:{label:"0-1 bln",clr:"#B8332A"},long:{label:"0-1 bln",clr:"#B8332A"}};
+  const tlMap={
+    immediate:{label:"1-3 hari",clr:"#B8332A"},
+    short:    {label:"1 minggu",clr:"#A86428"},
+    medium:   {label:"2 minggu",clr:"#2E6DB4"},
+    long:     {label:"1 bulan", clr:"#7A52A8"}
+  };
+  const tlOrder={immediate:0,short:1,medium:2,long:3};
   const impStyle={HIGH:{bg:"rgba(185,50,42,0.10)",txt:"#B8332A",bdr:"rgba(185,50,42,0.20)"},MEDIUM:{bg:"rgba(175,100,40,0.10)",txt:"#A86428",bdr:"rgba(175,100,40,0.20)"},LOW:{bg:"rgba(45,140,90,0.10)",txt:"#2D8C5A",bdr:"rgba(45,140,90,0.20)"}};
   function countMap(arr,key){const m={};arr.forEach(x=>{const k=typeof key==="function"?key(x):x[key];m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
   function parseDate(s){if(!s)return null;const gviz=s.match(/Date\((\d{4}),(\d+),(\d+)\)/);if(gviz)return new Date(+gviz[1],+gviz[2],+gviz[3]);const mn={jan:0,feb:1,mar:2,apr:3,may:4,mei:4,jun:5,jul:6,aug:7,agu:7,sep:8,oct:9,okt:9,nov:10,dec:11,des:11};const mStr=s.match(/(\d{1,2})\s+([a-z]{3,})\s+(\d{4})/i)||s.match(/([a-z]{3,})\s+(\d{1,2}),?\s+(\d{4})/i);if(mStr){const isNF=/^\d/.test(mStr[0]);const day=isNF?+mStr[1]:+mStr[2];const monStr=(isNF?mStr[2]:mStr[1]).toLowerCase().slice(0,3);const mon=mn[monStr];const year=+mStr[3];if(mon!==undefined)return new Date(year,mon,day);}let d=new Date(s);if(!isNaN(d)&&d.getFullYear()>2000)return d;const p=s.split(/[\/\-\.]/);if(p.length===3){if(p[2].length===4){d=new Date(`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`);if(!isNaN(d)&&d.getFullYear()>2000)return d;}if(p[0].length===4){d=new Date(`${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`);if(!isNaN(d)&&d.getFullYear()>2000)return d;}}return null;}
@@ -704,6 +782,171 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
     );
   }
 
+
+  function SheetLink({gid, realRow}){
+    if(!gid || !realRow) return null;
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=${gid}&range=A${realRow}:Z${realRow}`;
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer"
+        onClick={e=>e.stopPropagation()}
+        title="Buka di Google Sheets"
+        style={{display:"inline-flex",alignItems:"center",justifyContent:"center",
+          width:22,height:22,borderRadius:6,flexShrink:0,
+          background:"rgba(66,133,244,0.10)",border:"1px solid rgba(66,133,244,0.20)",
+          color:"rgba(66,133,244,0.80)",transition:"all 0.12s",textDecoration:"none"}}>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </a>
+    );
+  }
+
+  function SortBtn({label,sk,sort,setSort,onSort}){
+    const active=sort.k===sk;
+    return <span onClick={()=>onSort?onSort(sk):setSort(s=>({k:sk,d:s.k===sk&&s.d==="desc"?"asc":"desc"}))}
+      style={{fontSize:9,fontWeight:700,color:active?"rgba(0,0,0,0.55)":"rgba(0,0,0,0.30)",textTransform:"uppercase",
+        letterSpacing:"0.06em",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:2,userSelect:"none"}}>
+      {label}
+      {active?(sort.d==="asc"
+        ?<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+        :<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>)
+      :<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.25}}><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg>}
+    </span>;
+  }
+
+  function DrillTable({drillData,plans0,updateStatus}){
+    const [sort,setSort]=useState({k:"dateParsed",d:"desc"});
+    const rows=[...drillData].sort((a,b)=>{
+      if(sort.k==="dateParsed"){const da=a.dateParsed||new Date(0),db=b.dateParsed||new Date(0);return sort.d==="asc"?da-db:db-da;}
+      const vA=(a[sort.k]||"").toString().toLowerCase(),vB=(b[sort.k]||"").toString().toLowerCase();
+      return sort.d==="asc"?vA.localeCompare(vB):vB.localeCompare(vA);
+    });
+    const thStyle={padding:"10px 18px",textAlign:"left",fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:"0.08em",whiteSpace:"nowrap",cursor:"pointer"};
+    const sortArrow=(k)=>sort.k===k?(sort.d==="asc"
+      ?<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+      :<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>)
+      :<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.25}}><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg>;
+    const onSort=(k)=>setSort(s=>({k,d:s.k===k&&s.d==="desc"?"asc":"desc"}));
+    return <div style={{overflowX:"auto",maxHeight:380,overflowY:"auto"}}>
+      <table style={{width:"100%",fontSize:12,borderCollapse:"collapse"}}>
+        <thead style={{position:"sticky",top:0,background:"rgba(250,249,246,0.95)",backdropFilter:"blur(20px)",zIndex:10}}>
+          <tr style={{borderBottom:"1px solid rgba(0,0,0,0.06)"}}>
+            {[["Date","dateParsed"],["Branch","branch"],["Member","customer"]].map(([l,k])=>(
+              <th key={k} onClick={()=>onSort(k)} style={thStyle}><span style={{display:"inline-flex",alignItems:"center",gap:3}}>{l}{sortArrow(k)}</span></th>
+            ))}
+            <th style={{...thStyle,cursor:"default"}}>Issue Summary</th>
+            {[["Owner","ownerLabel"],["Rating","rating"],["Status","status"]].map(([l,k])=>(
+              <th key={k} onClick={()=>onSort(k)} style={thStyle}><span style={{display:"inline-flex",alignItems:"center",gap:3}}>{l}{sortArrow(k)}</span></th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(c=>(
+            <tr key={c.id} className="trow" style={{borderBottom:"1px solid rgba(0,0,0,0.04)"}}>
+              <td style={{padding:"11px 18px",color:"rgba(0,0,0,0.42)",fontWeight:500,whiteSpace:"nowrap"}}>{c.dateStr||"--"}</td>
+              <td style={{padding:"11px 18px"}}><div style={{fontWeight:700,color:"rgba(0,0,0,0.80)"}}>{c.branch}</div><div style={{fontSize:10,color:"rgba(0,0,0,0.30)",textTransform:"uppercase",letterSpacing:"0.05em",marginTop:2}}>{c.source}</div></td>
+              <td style={{padding:"11px 18px",fontWeight:600,color:"rgba(0,0,0,0.70)",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                <span className="tip" data-tip={c.customer} style={{display:"block",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                  {c.customer||"--"}
+                </span>
+              </td>
+              <td style={{padding:"11px 18px",color:"rgba(0,0,0,0.55)",fontWeight:500,maxWidth:240,lineHeight:1.5}}>
+                <span className="tip" data-tip={c.intiPermasalahan} style={{fontSize:12,color:"rgba(0,0,0,0.50)",fontStyle:"italic",display:"block",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>"{c.intiPermasalahan}"</span>
+              </td>
+              <td style={{padding:"11px 18px",fontWeight:600,color:"rgba(0,0,0,0.55)",whiteSpace:"nowrap"}}>{c.ownerLabel||"--"}</td>
+              <td style={{padding:"11px 18px",fontWeight:700,color:c.rating?"#A86428":"rgba(0,0,0,0.25)",textAlign:"center"}}>{c.rating?`* ${c.rating}`:"--"}</td>
+              <td style={{padding:"11px 18px"}}><div style={{display:"flex",alignItems:"center",gap:6}}><StatusSelect value={c.status} rowId={c.id} onUpdate={updateStatus} disabled={false}/><SheetLink gid={c.gid} realRow={c.realRow}/></div></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>;
+  }
+
+  function APDetailRows({rows,expRL,owner,updateStatus}){
+    const [sort,setSort]=useState({k:"dateParsed",d:"desc"});
+    const rowsWithOwner=useMemo(()=>rows.map(r=>({...r,ownerLabel:owner||"--"})),[rows,owner]);
+    const sorted=[...rowsWithOwner].sort((a,b)=>{
+      if(sort.k==="dateParsed"){const da=a.dateParsed||new Date(0),db=b.dateParsed||new Date(0);return sort.d==="asc"?da-db:db-da;}
+      const vA=(a[sort.k]||"").toString().toLowerCase(),vB=(b[sort.k]||"").toString().toLowerCase();
+      return sort.d==="asc"?vA.localeCompare(vB):vB.localeCompare(vA);
+    }).slice(0,expRL);
+    return <>
+      <div style={{display:"grid",gridTemplateColumns:"130px 80px 120px 90px 120px 140px 1fr",gap:12,padding:"4px 16px 8px",borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
+        <SortBtn label="Cabang" sk="branch" sort={sort} setSort={setSort}/>
+        <SortBtn label="Tanggal" sk="dateParsed" sort={sort} setSort={setSort}/>
+        <SortBtn label="Member" sk="customer" sort={sort} setSort={setSort}/>
+        <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.25)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Source</span>
+        <SortBtn label="Owner" sk="ownerLabel" sort={sort} setSort={setSort}/>
+        <SortBtn label="Status" sk="status" sort={sort} setSort={setSort}/>
+        <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.25)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Keluhan</span>
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:4}}>
+        {sorted.map((d,i)=>(
+          <div key={i} className="glass-inner" style={{padding:"12px 16px",display:"grid",gridTemplateColumns:"130px 80px 120px 90px 120px 140px 1fr",alignItems:"center",gap:12}}>
+            <span style={{fontWeight:700,color:"rgba(0,0,0,0.80)",fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.branch}</span>
+            <span style={{fontSize:11,color:"rgba(0,0,0,0.38)",whiteSpace:"nowrap"}}>{d.dateStr||"N/A"}</span>
+            <span className="tip" data-tip={d.customer} style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.70)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+              {d.customer||"--"}
+            </span>
+            <span style={{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",color:"rgba(0,0,0,0.38)",background:"rgba(0,0,0,0.06)",padding:"2px 8px",borderRadius:20,textAlign:"center",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.source||"--"}</span>
+            <span style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.55)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.ownerLabel||"--"}</span>
+            <div style={{display:"flex",alignItems:"center",gap:6}}><StatusSelect value={d.status} rowId={d.id} onUpdate={updateStatus} disabled={false}/><SheetLink gid={d.gid} realRow={d.realRow}/></div>
+            <span className="tip" data-tip={d.intiPermasalahan} style={{fontSize:12,color:"rgba(0,0,0,0.50)",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>"{d.intiPermasalahan}"</span>
+          </div>
+        ))}
+      </div>
+    </>;
+  }
+
+  function ClubDetailRows({issues,brLim,plans0,updateStatus}){
+    const [sortK,setSortK]=useState("iv");
+    const [sortD,setSortD]=useState("desc");
+    function toggleSort(k){
+      if(sortK===k){ setSortD(d=>d==="desc"?"asc":"desc"); }
+      else{ setSortK(k); setSortD("desc"); }
+    }
+    const sort={k:sortK,d:sortD};
+    const issuesWithMeta=useMemo(()=>issues.map(i=>({
+      ...i,
+      ownerLabel:plans0.find(p=>p.sub===i.sub)?.owner||"--",
+      iv:plans0.find(p=>p.sub===i.sub)?.iv||1
+    })),[issues,plans0]);
+    const sorted=useMemo(()=>[...issuesWithMeta].sort((a,b)=>{
+      if(sortK==="dateParsed"){const da=a.dateParsed||new Date(0),db=b.dateParsed||new Date(0);return sortD==="asc"?da-db:db-da;}
+      if(sortK==="iv"){return sortD==="asc"?a.iv-b.iv:b.iv-a.iv;}
+      const vA=(a[sortK]||"").toString().toLowerCase(),vB=(b[sortK]||"").toString().toLowerCase();
+      return sortD==="asc"?vA.localeCompare(vB):vB.localeCompare(vA);
+    }).slice(0,brLim),[issuesWithMeta,sortK,sortD,brLim]);
+    return <>
+      <div style={{display:"grid",gridTemplateColumns:"80px 140px 80px 120px 120px 140px 1fr",gap:12,padding:"4px 0 8px",borderBottom:"1px solid rgba(0,0,0,0.05)",marginBottom:8}}>
+        <SortBtn label="Level" sk="iv" sort={sort} onSort={toggleSort}/>
+        <SortBtn label="Sub-Issue" sk="sub" sort={sort} onSort={toggleSort}/>
+        <SortBtn label="Tanggal" sk="dateParsed" sort={sort} onSort={toggleSort}/>
+        <SortBtn label="Member" sk="customer" sort={sort} onSort={toggleSort}/>
+        <SortBtn label="Owner" sk="owner" sort={sort} onSort={toggleSort}/>
+        <SortBtn label="Status" sk="status" sort={sort} onSort={toggleSort}/>
+        <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.25)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Keluhan</span>
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {sorted.map((d,i)=>{
+          const imp=plans0.find(p=>p.sub===d.sub)?.imp||'LOW';
+          return <div key={i} className="glass-inner" style={{padding:"12px 16px",display:"grid",gridTemplateColumns:"80px 140px 80px 120px 120px 140px 1fr",alignItems:"center",gap:12}}>
+            <ImpBadge imp={imp}/>
+            <span style={{fontWeight:700,color:"rgba(0,0,0,0.80)",fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.sub}</span>
+            <span style={{fontSize:11,color:"rgba(0,0,0,0.38)",whiteSpace:"nowrap"}}>{d.dateStr||"N/A"}</span>
+            <span className="tip" data-tip={d.customer} style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.70)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.customer||"--"}</span>
+            <span style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.55)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.ownerLabel||"--"}</span>
+            <div style={{display:"flex",alignItems:"center",gap:6}}><StatusSelect value={d.status} rowId={d.id} onUpdate={updateStatus} disabled={false}/><SheetLink gid={d.gid} realRow={d.realRow}/></div>
+            <span className="tip" data-tip={d.intiPermasalahan} style={{fontSize:12,color:"rgba(0,0,0,0.50)",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>"{d.intiPermasalahan}"</span>
+          </div>;
+        })}
+      </div>
+    </>;
+  }
+
   function Dashboard({division,onLogout}){
     const [allData,setAllData]=useState([]);
     const [localStatus,setLStat]=useState({});
@@ -733,6 +976,7 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
     const [sheets,setSheets]=useState([]);
     const sheetsRef=useRef([]);
     const drillRef=useRef(null);
+    const topClubsRef=useRef(null);
     const branchRef=useRef(null);
 
     const dataWithStatus=useMemo(()=>allData.map(d=>({...d,status:localStatus[d.id]??d.status})),[allData,localStatus]);
@@ -799,9 +1043,8 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
       return items;
     },[plans0,sortCfg]);
 
-    const tlOrder={"immediate":0,"short":1,"medium":2,"long":3};
     const ts=k=>setSort(s=>({k,d:s?.k===k&&s?.d==="desc"?"asc":"desc"}));
-    const SortIcon=({col})=>{
+    const sortIcon=(col)=>{
       if(!sortCfg||sortCfg.k!==col) return <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.25}}><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg>;
       return sortCfg.d==="asc"
         ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
@@ -843,9 +1086,16 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
       return`${MONTHS_ID[m1]} ${y1} - ${MONTHS_ID[m2]} ${y2}`;
     },[dateFrom,dateTo]);
 
-    const drillData=drillSub?dispFilt.filter(c=>c.sub===drillSub||c.source===drillSub):[];
+    const drillData=useMemo(()=>drillSub?dispFilt.filter(c=>c.sub===drillSub||c.source===drillSub).map(c=>({...c,ownerLabel:plans0.find(p=>p.sub===c.sub)?.owner||"--"})):[]  ,[drillSub,dispFilt,plans0]);
 
     useEffect(()=>{if(drillSub&&drillRef.current){setTimeout(()=>drillRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),50);}},[drillSub]);
+    const expRowRef=useRef(null);
+    const expTriggerRef=useRef(null); // ref for the AP row header (the clicked row)
+    useEffect(()=>{
+      if(expRow&&expTriggerRef.current){
+        setTimeout(()=>expTriggerRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),80);
+      }
+    },[expRow]);
     useEffect(()=>{if(expBr&&branchRef.current){setTimeout(()=>branchRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),50);}},[expBr]);
 
     const loadData=useCallback(async(gidsList)=>{
@@ -964,11 +1214,11 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
           {[
             {l:"COMPLAINTS",v:filtered.length,n:filter==="Semua"?division.label:filter,dot:"#2E6DB4"},
             {l:"GOOGLE REVIEWS",v:gReviews.length,n:`${oneStars.length} dapat bintang 1`,dot:"#B8332A",drill:"Google Review"},
-            {l:"BRANCHES",v:branchSet.size,n:"lokasi terdampak",dot:"#2D8C5A"},
+            {l:"BRANCHES",v:branchSet.size,n:"Club Affected",dot:"#2D8C5A",scrollTo:"clubs"},
             {l:"TOP ISSUE",v:subCts[0]?.[0]||"--",n:`${subCts[0]?.[1]||0} laporan`,dot:"#A86428",sm:true,drill:subCts[0]?.[0]},
             {l:"DAILY RATE",v:(filtered.length/daysCt).toFixed(1),n:`per hari (${daysCt} hari)`,dot:"#7A52A8"},
           ].map((k,i)=>(
-            <div key={i} className="kpi-card" onClick={k.drill?()=>setDrill(drillSub===k.drill?null:k.drill):undefined} style={{cursor:k.drill?"pointer":"default"}}>
+            <div key={i} className="kpi-card" onClick={k.drill?()=>setDrill(drillSub===k.drill?null:k.drill):k.scrollTo==="clubs"?()=>topClubsRef.current?.scrollIntoView({behavior:"smooth",block:"start"}):undefined} style={{cursor:(k.drill||k.scrollTo)?"pointer":"default"}}>
               <div style={{fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.36)",letterSpacing:"0.10em",textTransform:"uppercase",marginBottom:12}}>{k.l}</div>
               <div style={{fontSize:k.sm?22:36,fontWeight:800,color:"rgba(0,0,0,0.84)",letterSpacing:"-0.02em",lineHeight:1,marginBottom:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{k.v}</div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
@@ -1051,58 +1301,7 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
                 </button>
                 </div>
               </div>
-              {(()=>{
-                const [drillSort,setDS]=React.useState({k:"dateParsed",d:"desc"});
-                const sortedDrill=[...drillData].sort((a,b)=>{
-                  const vA=a[drillSort.k]||"",vB=b[drillSort.k]||"";
-                  if(drillSort.k==="dateParsed"){const da=a.dateParsed||new Date(0),db=b.dateParsed||new Date(0);return drillSort.d==="asc"?da-db:db-da;}
-                  if(vA<vB)return drillSort.d==="asc"?-1:1;
-                  if(vA>vB)return drillSort.d==="asc"?1:-1;
-                  return 0;
-                });
-                const DH=({label,k})=><th onClick={()=>setDS(s=>({k,d:s.k===k&&s.d==="desc"?"asc":"desc"}))} style={{padding:"10px 18px",textAlign:"left",fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:"0.08em",whiteSpace:"nowrap",cursor:"pointer"}}>
-                  <span style={{display:"inline-flex",alignItems:"center",gap:3}}>{label}
-                    {drillSort.k===k
-                      ? drillSort.d==="asc"
-                        ? <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
-                        : <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>
-                      : <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.25}}><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg>
-                    }
-                  </span>
-                </th>;
-                return <div style={{overflowX:"auto",maxHeight:380,overflowY:"auto"}}>
-                <table style={{width:"100%",fontSize:12,borderCollapse:"collapse"}}>
-                  <thead style={{position:"sticky",top:0,background:"rgba(250,249,246,0.95)",backdropFilter:"blur(20px)",zIndex:10}}>
-                    <tr style={{borderBottom:"1px solid rgba(0,0,0,0.06)"}}>
-                      <DH label="Date" k="dateParsed"/>
-                      <DH label="Branch" k="branch"/>
-                      <DH label="Member" k="customer"/>
-                      <th style={{padding:"10px 18px",textAlign:"left",fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:"0.08em",whiteSpace:"nowrap"}}>Issue Summary</th>
-                      <DH label="Owner" k="owner"/>
-                      <DH label="Rating" k="rating"/>
-                      <DH label="Status" k="status"/>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedDrill.map(c=>(
-                      <tr key={c.id} className="trow" style={{borderBottom:"1px solid rgba(0,0,0,0.04)"}}>
-                        <td style={{padding:"11px 18px",color:"rgba(0,0,0,0.42)",fontWeight:500,whiteSpace:"nowrap"}}>{c.dateStr||"--"}</td>
-                        <td style={{padding:"11px 18px"}}><div style={{fontWeight:700,color:"rgba(0,0,0,0.80)"}}>{c.branch}</div><div style={{fontSize:10,color:"rgba(0,0,0,0.30)",textTransform:"uppercase",letterSpacing:"0.05em",marginTop:2}}>{c.source}</div></td>
-                        <td style={{padding:"11px 18px",fontWeight:600,color:"rgba(0,0,0,0.70)"}}>{c.customer||"--"}</td>
-                        <td style={{padding:"11px 18px",color:"rgba(0,0,0,0.55)",fontWeight:500,maxWidth:240,lineHeight:1.5}}>
-                        <span className="tip" style={{display:"block",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                          "{c.intiPermasalahan}"
-                          <span className="tip-box">"{c.intiPermasalahan}"</span>
-                        </span>
-                      </td>
-                        <td style={{padding:"11px 18px",fontWeight:600,color:"rgba(0,0,0,0.55)",whiteSpace:"nowrap"}}>{plans0.find(p=>p.sub===c.sub)?.owner||"--"}</td>
-                        <td style={{padding:"11px 18px",fontWeight:700,color:c.rating?"#A86428":"rgba(0,0,0,0.25)",textAlign:"center"}}>{c.rating?`* ${c.rating}`:"--"}</td>
-                        <td style={{padding:"11px 18px"}}><StatusSelect value={c.status} rowId={c.id} onUpdate={updateStatus} disabled={false}/></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>;})()}
+<DrillTable drillData={drillData} plans0={plans0} updateStatus={updateStatus}/>
             </G>
           </div>
         )}
@@ -1122,7 +1321,7 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
                 <tr style={{borderBottom:"1px solid rgba(0,0,0,0.055)"}}>
                   {[{k:null,l:"#"},{k:"sub",l:"Categorization"},{k:"count",l:"Vol"},{k:"iv",l:"Level"},{k:null,l:"Strategic Initiative"},{k:"owner",l:"Owner"},{k:"tl",l:"Timeline"}].map(({k,l})=>(
                     <th key={l} onClick={k?()=>ts(k):undefined} style={{padding:"12px 18px",textAlign:"left",fontSize:10,fontWeight:700,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:"0.08em",cursor:k?"pointer":"default",whiteSpace:"nowrap"}}>
-                      <span style={{display:"inline-flex",alignItems:"center",gap:3}}>{l}{k&&<SortIcon col={k}/>}</span>
+                      <span style={{display:"inline-flex",alignItems:"center",gap:3}}>{l}{k&&sortIcon(k)}</span>
                     </th>
                   ))}
                 </tr>
@@ -1132,7 +1331,7 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
                   const tl=tlMap[p.tl]||tlMap.short,isExp=expRow===p.sub;
                   return(
                     <React.Fragment key={p.sub}>
-                      <tr className="trow" style={{borderBottom:"1px solid rgba(0,0,0,0.038)",cursor:"pointer",background:isExp?"rgba(255,255,255,0.35)":""}} onClick={()=>{setExpRow(isExp?null:p.sub);setExpRL(10);}}>
+                      <tr ref={isExp?expTriggerRef:null} className="trow" style={{borderBottom:"1px solid rgba(0,0,0,0.038)",cursor:"pointer",background:isExp?"rgba(255,255,255,0.35)":""}} onClick={()=>{setExpRow(isExp?null:p.sub);setExpRL(10);}}>
                         <td style={{padding:"14px 18px",color:"rgba(0,0,0,0.28)",fontWeight:600,textAlign:"center"}}>{i+1}</td>
                         <td style={{padding:"14px 18px",fontWeight:700,color:"rgba(0,0,0,0.80)"}}>{p.sub}</td>
                         <td style={{padding:"14px 18px",textAlign:"center",fontWeight:800,color:"rgba(0,0,0,0.78)"}}>{p.count}</td>
@@ -1148,46 +1347,12 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
                               <span style={{fontSize:10,fontWeight:800,color:"rgba(0,0,0,0.32)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Detail Keluhan</span>
                               <div style={{display:"flex",gap:8,alignItems:"center"}}>
                                 <button onClick={()=>expDrill(p.sub)} className="pill-btn" style={{color:"#2D8C5A",fontSize:10,fontWeight:700,gap:4,padding:"4px 10px"}}>{SVG_DL} Export Excel</button>
-                                <select value={expRL} onChange={e=>setExpRL(Number(e.target.value))} style={{fontSize:11,border:"1px solid rgba(0,0,0,0.10)",borderRadius:8,padding:"3px 8px",color:"rgba(0,0,0,0.60)",fontWeight:600,cursor:"pointer",background:"rgba(255,255,255,0.80)"}}>
+                                <select value={expRL} onChange={e=>{const sy=window.scrollY;setExpRL(Number(e.target.value));requestAnimationFrame(()=>window.scrollTo({top:sy}));}} style={{fontSize:11,border:"1px solid rgba(0,0,0,0.10)",borderRadius:8,padding:"3px 8px",color:"rgba(0,0,0,0.60)",fontWeight:600,cursor:"pointer",background:"rgba(255,255,255,0.80)"}}>
                                   {[10,20,50,99999].map(v=><option key={v} value={v}>Show {v===99999?"All":v}</option>)}
                                 </select>
                               </div>
                             </div>
-                            {(()=>{
-                              const [apDS,setAPDS]=React.useState({k:"dateParsed",d:"desc"});
-                              const apRows=[...dispFilt.filter(f=>f.sub===p.sub)].sort((a,b)=>{
-                                if(apDS.k==="dateParsed"){const da=a.dateParsed||new Date(0),db=b.dateParsed||new Date(0);return apDS.d==="asc"?da-db:db-da;}
-                                const vA=(a[apDS.k]||"").toString().toLowerCase(),vB=(b[apDS.k]||"").toString().toLowerCase();
-                                return apDS.d==="asc"?vA.localeCompare(vB):vB.localeCompare(vA);
-                              }).slice(0,expRL);
-                              const APH=({label,k})=><span onClick={()=>setAPDS(s=>({k,d:s.k===k&&s.d==="desc"?"asc":"desc"}))} style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:"0.06em",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:2,userSelect:"none"}}>
-                                {label}
-                                {apDS.k===k?(apDS.d==="asc"?<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>:<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>):<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.25}}><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg>}
-                              </span>;
-                              return <>
-                              <div style={{display:"grid",gridTemplateColumns:"130px 80px 120px 90px 120px 140px 1fr",gap:12,padding:"4px 16px 8px",borderBottom:"1px solid rgba(0,0,0,0.05)"}}>
-                                <APH label="Cabang" k="branch"/><APH label="Tanggal" k="dateParsed"/><APH label="Member" k="customer"/>
-                                <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.25)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Source</span>
-                                <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.25)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Owner</span>
-                                <APH label="Status" k="status"/>
-                                <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.25)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Keluhan</span>
-                              </div>
-                            <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:4}}>
-                              {apRows.map((d,idx)=>(
-                                <div key={idx} className="glass-inner" style={{padding:"12px 16px",display:"grid",gridTemplateColumns:"130px 80px 120px 90px 120px 140px 1fr",alignItems:"center",gap:12}}>
-                                  <span style={{fontWeight:700,color:"rgba(0,0,0,0.80)",fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.branch}</span>
-                                  <span style={{fontSize:11,color:"rgba(0,0,0,0.38)",whiteSpace:"nowrap"}}>{d.dateStr||"N/A"}</span>
-                                  <span style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.70)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.customer||"--"}</span>
-                                  <span style={{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",color:"rgba(0,0,0,0.38)",background:"rgba(0,0,0,0.06)",padding:"2px 8px",borderRadius:20,textAlign:"center",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.source||"--"}</span>
-                                  <span style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.55)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.owner||"--"}</span>
-                                  <StatusSelect value={d.status} rowId={d.id} onUpdate={updateStatus} disabled={false}/>
-                                  <span className="tip" style={{fontSize:12,color:"rgba(0,0,0,0.50)",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>
-                                    "{d.intiPermasalahan}"
-                                    <span className="tip-box">"{d.intiPermasalahan}"</span>
-                                  </span>
-                                </div>
-                              ))}
-                            </div></>;})()}
+<APDetailRows rows={dispFilt.filter(f=>f.sub===p.sub)} expRL={expRL} owner={p.owner} updateStatus={updateStatus}/>
                           </td>
                         </tr>
                       )}
@@ -1200,7 +1365,7 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
         </G>
 
         {/* TOP AFFECTED CLUBS */}
-        <G style={{overflow:"hidden",marginBottom:16,padding:0}}>
+        <G style={{overflow:"hidden",marginBottom:16,padding:0}} ref={topClubsRef}>
           <div style={{padding:"18px 24px",borderBottom:"1px solid rgba(0,0,0,0.055)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <span style={{fontSize:17,fontWeight:800,color:"rgba(0,0,0,0.82)"}}>Top Affected Clubs</span>
             <div style={{display:"flex",gap:8,alignItems:"center"}}>
@@ -1230,7 +1395,7 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
                   <span style={{fontSize:12,color:"rgba(0,0,0,0.40)"}}>{bInfo.count} issues | {bInfo.critCt} critical</span>
                 </div>
                 <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                  <select value={brLim} onChange={e=>setBrLim(Number(e.target.value))} style={{fontSize:11,border:"1px solid rgba(0,0,0,0.10)",borderRadius:8,padding:"3px 8px",color:"rgba(0,0,0,0.60)",fontWeight:600,cursor:"pointer",background:"rgba(255,255,255,0.80)"}}>
+                  <select value={brLim} onChange={e=>{const sy=window.scrollY;setBrLim(Number(e.target.value));requestAnimationFrame(()=>window.scrollTo({top:sy}));}} style={{fontSize:11,border:"1px solid rgba(0,0,0,0.10)",borderRadius:8,padding:"3px 8px",color:"rgba(0,0,0,0.60)",fontWeight:600,cursor:"pointer",background:"rgba(255,255,255,0.80)"}}>
                     {[10,20,50,99999].map(v=><option key={v} value={v}>Show {v===99999?"All":v}</option>)}
                   </select>
                   <button onClick={()=>{const rows=bInfo.issues.map((d,idx)=>({"#":idx+1,Branch:d.branch,"Sub-Issue":d.sub,Date:d.dateStr,Status:d.status,Rating:d.rating||"",Source:d.source,Summary:d.intiPermasalahan}));exportXLSX(rows,`FTL_${bInfo.branch}_${new Date().toISOString().split('T')[0]}.xlsx`,bInfo.branch.slice(0,31));}} className="pill-btn" style={{fontSize:10,color:"#2D8C5A",fontWeight:700,gap:4}}>{SVG_DL} Excel</button>
@@ -1240,43 +1405,7 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
                 </div>
               </div>
               <div style={{padding:"14px 20px"}}>
-                {(()=>{
-                const [cbDS,setCBDS]=React.useState({k:"iv",d:"desc"});
-                const cbRows=[...bInfo.issues].sort((a,b)=>{
-                  if(cbDS.k==="dateParsed"){const da=a.dateParsed||new Date(0),db=b.dateParsed||new Date(0);return cbDS.d==="asc"?da-db:db-da;}
-                  if(cbDS.k==="iv"){const iA=plans0.find(p=>p.sub===a.sub)?.iv||1,iB=plans0.find(p=>p.sub===b.sub)?.iv||1;return cbDS.d==="asc"?iA-iB:iB-iA;}
-                  const vA=(a[cbDS.k]||"").toString().toLowerCase(),vB=(b[cbDS.k]||"").toString().toLowerCase();
-                  return cbDS.d==="asc"?vA.localeCompare(vB):vB.localeCompare(vA);
-                }).slice(0,brLim);
-                const CBH=({label,k})=><span onClick={()=>setCBDS(s=>({k,d:s.k===k&&s.d==="desc"?"asc":"desc"}))} style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.35)",textTransform:"uppercase",letterSpacing:"0.06em",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:2,userSelect:"none"}}>
-                  {label}
-                  {cbDS.k===k?(cbDS.d==="asc"?<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>:<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>):<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.25}}><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg>}
-                </span>;
-                return <>
-                <div style={{display:"grid",gridTemplateColumns:"80px 140px 80px 120px 120px 140px 1fr",gap:12,padding:"4px 0 8px",borderBottom:"1px solid rgba(0,0,0,0.05)",marginBottom:8}}>
-                  <CBH label="Level" k="iv"/><CBH label="Sub-Issue" k="sub"/><CBH label="Tanggal" k="dateParsed"/>
-                  <CBH label="Member" k="customer"/>
-                  <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.25)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Owner</span>
-                  <CBH label="Status" k="status"/>
-                  <span style={{fontSize:9,fontWeight:700,color:"rgba(0,0,0,0.25)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Keluhan</span>
-                </div>
-                <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                  {cbRows.map((d,idx)=>{
-                    const imp=plans0.find(p=>p.sub===d.sub)?.imp||'LOW';
-                    return(<div key={idx} className="glass-inner" style={{padding:"12px 16px",display:"grid",gridTemplateColumns:"80px 140px 80px 120px 120px 140px 1fr",alignItems:"center",gap:12}}>
-                      <ImpBadge imp={imp}/>
-                      <span style={{fontWeight:700,color:"rgba(0,0,0,0.80)",fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.sub}</span>
-                      <span style={{fontSize:11,color:"rgba(0,0,0,0.38)",whiteSpace:"nowrap"}}>{d.dateStr||"N/A"}</span>
-                      <span style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.70)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.customer||"--"}</span>
-                      <span style={{fontSize:12,fontWeight:600,color:"rgba(0,0,0,0.55)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{plans0.find(pl=>pl.sub===d.sub)?.owner||"--"}</span>
-                      <StatusSelect value={d.status} rowId={d.id} onUpdate={updateStatus} disabled={false}/>
-                      <span className="tip" style={{fontSize:12,color:"rgba(0,0,0,0.50)",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>
-                        "{d.intiPermasalahan}"
-                        <span className="tip-box">"{d.intiPermasalahan}"</span>
-                      </span>
-                    </div>);
-                  })}
-                </div></>;})()}
+  <ClubDetailRows key={bInfo.branch} issues={bInfo.issues} brLim={brLim} plans0={plans0} updateStatus={updateStatus}/>
               </div>
             </div>
           ))}
