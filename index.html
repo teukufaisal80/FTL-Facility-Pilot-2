@@ -71,9 +71,7 @@
   const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
   const SHEET_ID = "1HqgoFdEwppoBfcPj2HeXPJuo-WH-Ef4sik1J0OYoORg";
-  const GEMINI_KEY = "AIzaSyCEjU3SuMpxHbGiK6i4eusLUivoIURzDto";
-  // Generative Language API endpoint (Google Cloud Console)
-  // v1beta supports gemini-2.0-flash
+  const GEMINI_KEY = "AIzaSyAAqlD9paJPIRlFhnbN_L3aIc0B1X9yyOk"; // <-- ganti setelah revoke key lama
   const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxoJYrWA2tr1oVe-G-UVlnKZ36xMroIFKXW2-KrG_Y1WEl9rofq2NdCVtHtfwo2XtE/exec";
   const SESSION_DURATION = 15 * 60 * 1000;
@@ -466,14 +464,9 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
         if(!res.ok || data.error){
           const errMsg = data.error?.message || data.error?.status || `HTTP ${res.status}`;
           const errCode = data.error?.code || res.status;
-          console.error("[FTL AI] Full error:", JSON.stringify(data));
-          console.error("[FTL AI] Code:", errCode, "| Msg:", errMsg);
-          if(errCode===400) throw new Error(`Bad request (400): ${errMsg}`);
-          if(errCode===401||errMsg.toLowerCase().includes("api_key_invalid")||errMsg.toLowerCase().includes("api key not valid")) throw new Error(`API Key tidak valid (401). Pastikan key aktif di Google Cloud Console.`);
-          if(errCode===403||errMsg.toLowerCase().includes("forbidden")||errMsg.toLowerCase().includes("permission")) throw new Error(`Akses ditolak (403). Pastikan Generative Language API sudah di-enable dan API key tidak ada restriction.`);
-          if(errCode===429||errMsg.toLowerCase().includes("resource_exhausted")) throw new Error(`Rate limit (429): ${errMsg}. Lihat Cloud Console > APIs & Services > Quotas.`);
-          if(errCode===503) throw new Error(`Gemini sementara tidak tersedia (503). Coba lagi.`);
-          throw new Error(`Gemini error ${errCode}: ${errMsg}`);
+          console.error("[FTL AI] Full error response:", JSON.stringify(data));
+          // Tampilkan raw error langsung - paling informatif
+          throw new Error(`[${errCode}] ${errMsg}`);
         }
         const text=data.candidates?.[0]?.content?.parts?.[0]?.text||"";
         console.log("[FTL AI] Got text response, length:", text.length);
@@ -483,13 +476,9 @@ Buat 4-6 items, days maksimal 30, actionable untuk operasional gym.`;
         const parsed=JSON.parse(jm[0]);
         setModal({title:titles[type],summary:parsed.summary,items:parsed.items||[]});
       }catch(e){
-        let msg = e.message || "Unknown error";
-        if(msg.includes("API_KEY_INVALID") || msg.includes("API key not valid") || msg.includes("INVALID_ARGUMENT")) msg = "API Key tidak valid. Pastikan Generative Language API sudah di-enable di Google Cloud Console (console.cloud.google.com).";
-        else if(msg.includes("RESOURCE_EXHAUSTED") || msg.includes("quota") || msg.includes("429")) msg = "Quota harian Gemini API habis. Cek di Google Cloud Console > APIs & Services > Quotas, atau tunggu reset besok.";
-        else if(msg.includes("403") || msg.includes("forbidden") || msg.includes("permission")) msg = "API Key tidak punya izin. Pastikan 'Generative Language API' sudah di-enable dan API key tidak ada restriction di Google Cloud Console.";
-        else if(msg.includes("fetch") || msg.includes("Failed to fetch") || msg.includes("NetworkError")) msg = "Gagal konek ke Gemini API. Cek koneksi internet.";
+        const msg = e.message || "Unknown error";
+        console.error("[FTL AI Error]", msg);
         setError(msg);
-        console.error("[FTL AI Error]", e);
       }
       setLoading(false);
     }
